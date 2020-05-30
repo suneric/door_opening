@@ -1,0 +1,6 @@
+<?xml version="1.0"?>
+
+<robot name="mobile_robot" xmlns:xacro="https://www.ros.org/wiki/xacro" >
+    <xacro:include filename="$(find dor_description)/urdf/triwheeler.urdf.xacro" />
+    <xacro:triwheeler_base_macro />
+</robot>

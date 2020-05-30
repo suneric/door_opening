@@ -1,0 +1,27 @@
+<launch>
+  <arg name="model" default="$(find dor_description)/urdf/mobile_robot.urdf.xacro"/>
+  <arg name="x" default="2.5"/>
+  <arg name="y" default="-2.0"/>
+  <arg name="z" default="0.0"/>
+
+  <!-- We resume the logic in empty_world.launch, changing only the name of the world to be launched -->
+  <include file="$(find gazebo_ros)/launch/empty_world.launch">
+    <arg name="world_name" value="$(find dor_gazebo)/worlds/wall_door.world"/>
+    <arg name="paused" value="false"/>
+    <arg name="use_sim_time" value="true"/>
+    <arg name="gui" value="true"/>
+    <arg name="recording" value="false"/>
+    <arg name="debug" value="false"/>
+  </include>
+
+  <!--spawn mobile robot-->
+  <param name="robot_description" command="$(find xacro)/xacro --inorder '$(arg model)'" />
+  <node name="urdf_spawner" pkg="gazebo_ros" type="spawn_model" respawn="false" output="screen"
+        args="-param robot_description
+           -urdf
+           -x $(arg x)
+           -y $(arg y)
+           -z $(arg z)
+           -model mobile_robot" />
+
+</launch>
