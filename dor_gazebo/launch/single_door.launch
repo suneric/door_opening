@@ -10,8 +10,8 @@
     <arg name="paused" value="false"/>
     <arg name="use_sim_time" value="true"/>
     <arg name="gui" value="true"/>
-    <arg name="recording" value="false"/>
     <arg name="debug" value="false"/>
+    <arg name="headless" default="false"/>
   </include>
 
   <!--spawn mobile robot-->

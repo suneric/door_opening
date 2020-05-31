@@ -2,7 +2,7 @@
 
 <robot xmlns:xacro="https://www.ros.org/wiki/xacro" >
     <xacro:property name="PI" value="3.1415926535897931"/>
-    <xacro:property name="chassis_x" value="0.6" />
+    <xacro:property name="chassis_x" value="0.4" />
     <xacro:property name="chassis_y" value="0.4" />
     <xacro:property name="chassis_z" value="0.2" />
     <xacro:property name="chassis_m" value="20" />
@@ -11,7 +11,7 @@
     <xacro:property name="wheel_m" value="0.5"/>
     <xacro:property name="caster_r" value="0.1"/>
     <xacro:property name="caster_m" value="0.1"/>
-    <xacro:property name="wheelbase" value="0.6" />
+    <xacro:property name="wheelbase" value="0.4" />
     <xacro:property name="track" value="0.48" />
 
     <!-- main triwheeler link -->
