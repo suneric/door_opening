@@ -24,4 +24,7 @@
            -z $(arg z)
            -model mobile_robot" />
 
+  <!--load controller-->
+  <include file="$(find dor_control)/launch/mobile_robot_control.launch"/>
+
 </launch>

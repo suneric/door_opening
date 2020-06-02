@@ -1,0 +1,183 @@
+<?xml version="1.0" ?>
+<robot xmlns:xacro="https://www.ros.org/wiki/xacro" >
+    <xacro:property name="PI" value="3.1415926535897931"/>
+    <xacro:property name="location_x" value="0.25" />
+    <xacro:property name="location_y" value="0" />
+    <xacro:property name="location_z" value="0.3" />
+
+    <xacro:macro name="operate_device_macro" params="parent robotname">
+      <joint name="joint_support_bar" type="fixed">
+        <origin xyz="${location_x} ${location_y} ${location_z}" rpy="0 0 0"/>
+        <parent link="${parent}"/>
+        <child link="link_bar"/>
+      </joint>
+
+      <link name="link_bar">
+        <visual>
+          <origin xyz="0.01 0 0" rpy="0 0 0" />
+          <geometry>
+            <box size="0.02 0.3 0.02"/>
+          </geometry>
+        </visual>
+        <collision>
+          <origin xyz="0.01 0 0" rpy="0 0 0" />
+          <geometry>
+            <box size="0.02 0.3 0.02"/>
+          </geometry>
+        </collision>
+        <inertial>
+          <mass value="0.01"/>
+          <origin xyz="0.01 0 0" rpy="0 0 0"/>
+          <inertia ixx="0.000034" ixy="0" ixz="0" iyy="0.00000067" iyz="0" izz="0.000034"/>
+        </inertial>
+      </link>
+
+      <joint name="joint_bar_slider1" type="prismatic">
+        <origin xyz="0.02 0 0" rpy="0 0 0"/>
+        <parent link="link_bar"/>
+        <child link="link_slider1"/>
+        <axis xyz="0 1 0"/>
+        <limit upper="0.15" lower="-0.15" effort="30.0" velocity="0.1"/>
+      </joint>
+
+      <link name="link_slider1">
+        <visual>
+          <origin xyz="0.01 0 0" rpy="0 0 0" />
+          <geometry>
+            <box size="0.02 0.02 0.8"/>
+          </geometry>
+        </visual>
+        <collision>
+          <origin xyz="0.01 0 0" rpy="0 0 0" />
+          <geometry>
+            <box size="0.02 0.02 0.8"/>
+          </geometry>
+        </collision>
+        <inertial>
+          <mass value="0.02"/>
+          <origin xyz="0.01 0 0" rpy="0 0 0"/>
+          <inertia ixx="0.0006" ixy="0" ixz="0" iyy="0.0006" iyz="0" izz="0.00000013"/>
+        </inertial>
+      </link>
+
+      <joint name="joint_slider1_slider2" type="prismatic">
+        <origin xyz="0.02 0 0" rpy="0 0 0"/>
+        <parent link="link_slider1"/>
+        <child link="link_slider2"/>
+        <axis xyz="0 0 1"/>
+        <limit upper="0.38" lower="-0.38" effort="30.0" velocity="0.1"/>
+      </joint>
+
+      <link name="link_slider2">
+        <visual>
+          <origin xyz="0.01 0 0" rpy="0 0 0" />
+          <geometry>
+            <box size="0.02 0.04 0.04"/>
+          </geometry>
+        </visual>
+        <collision>
+          <origin xyz="0.01 0 0" rpy="0 0 0" />
+          <geometry>
+            <box size="0.02 0.04 0.04"/>
+          </geometry>
+        </collision>
+        <inertial>
+          <mass value="0.02"/>
+          <origin xyz="0.01 0 0" rpy="0 0 0"/>
+          <inertia ixx="0.0006" ixy="0" ixz="0" iyy="0.0006" iyz="0" izz="0.00000013"/>
+        </inertial>
+      </link>
+
+      <joint name="joint_slider_finger" type="fixed">
+        <origin xyz="0.02 0 0" rpy="0 0 0"/>
+        <parent link="link_slider2"/>
+        <child link="link_finger"/>
+      </joint>
+
+      <link name="link_finger">
+        <visual>
+          <origin xyz="0.05 0 0" rpy="0 0 0" />
+          <geometry>
+            <box size="0.1 0.02 0.02"/>
+          </geometry>
+        </visual>
+        <collision>
+          <origin xyz="0.05 0 0" rpy="0 0 0" />
+          <geometry>
+            <box size="0.1 0.02 0.02"/>
+          </geometry>
+        </collision>
+        <inertial>
+          <mass value="0.02"/>
+          <origin xyz="0.05 0 0" rpy="0 0 0" />
+          <inertia ixx="0.000001" ixy="0" ixz="0" iyy="0.000017" iyz="0" izz="0.000017"/>
+        </inertial>
+      </link>
+
+      <joint name="joint_finger_tip" type="fixed">
+        <origin xyz="0.1 0 0" rpy="0 0 0"/>
+        <parent link="link_finger"/>
+        <child link="link_tip"/>
+      </joint>
+      <link name="link_tip">
+        <visual>
+          <origin xyz="0.005 0 -0.015" rpy="0 0 0" />
+          <geometry>
+            <box size="0.01 0.02 0.05"/>
+          </geometry>
+        </visual>
+        <collision>
+          <origin xyz="0.005 0 -0.015" rpy="0 0 0" />
+          <geometry>
+            <box size="0.01 0.02 0.05"/>
+          </geometry>
+        </collision>
+        <inertial>
+          <mass value="0.001"/>
+          <origin xyz="0.005 0 -0.015" rpy="0 0 0" />
+          <inertia ixx="0.00000001" ixy="0" ixz="0" iyy="0.000000017" iyz="0" izz="0.0000000017"/>
+        </inertial>
+      </link>
+
+      <transmission name="bar_trans">
+        <type>transmission_interface/SimpleTransmission</type>
+        <joint name="joint_bar_slider1">
+          <hardwareInterface>EffortJointInterface</hardwareInterface>
+        </joint>
+        <actuator name="bar_motor">
+          <hardwareInterface>EffortJointInterface</hardwareInterface>
+          <mechanicalReduction>1</mechanicalReduction>
+        </actuator>
+      </transmission>
+
+      <transmission name="lift_trans">
+        <type>transmission_interface/SimpleTransmission</type>
+        <joint name="joint_slider1_slider2">
+          <hardwareInterface>EffortJointInterface</hardwareInterface>
+        </joint>
+        <actuator name="lift_motor">
+          <hardwareInterface>EffortJointInterface</hardwareInterface>
+          <mechanicalReduction>1</mechanicalReduction>
+        </actuator>
+      </transmission>
+
+      <gazebo reference="link_bar">
+        <material>Gazebo/Orange</material>
+      </gazebo>
+      <gazebo reference="link_slider1">
+        <material>Gazebo/Orange</material>
+      </gazebo>
+      <gazebo reference="link_slider2">
+        <material>Gazebo/Grey</material>
+      </gazebo>
+
+      <gazebo>
+        <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so">
+          <robotNamespace>/${robotname}</robotNamespace>
+          <robotSimType>gazebo_ros_control/DefaultRobotHWSim</robotSimType>
+          <legacyModeNS>true</legacyModeNS>
+        </plugin>
+      </gazebo>
+
+    </xacro:macro>
+</robot>

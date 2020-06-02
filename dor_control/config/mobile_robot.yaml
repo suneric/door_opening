@@ -1,0 +1,15 @@
+mobile_robot:
+  # publish all joint states
+  joint_state_controller:
+    type: joint_state_controller/JointStateController
+    publish_rate: 50
+
+  # Position Controllers
+  joint_bar_controller:
+    type: effort_controllers/JointPositionController
+    joint: joint_bar_slider1
+    pid: {p: 100.0, i: 0.01, d: 10.0}
+  joint_lift_controller:
+    type: effort_controllers/JointPositionController
+    joint: joint_slider1_slider2
+    pid: {p: 100.0, i: 0.01, d: 10.0}
