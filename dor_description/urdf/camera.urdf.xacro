@@ -1,0 +1,112 @@
+<?xml version="1.0" ?>
+<robot xmlns:xacro="https://www.ros.org/wiki/xacro" >
+    <xacro:property name="M_PI" value="3.1415926535897931"/>
+    <xacro:property name="location_x" value="0" />
+    <xacro:property name="location_y" value="0" />
+    <xacro:property name="location_z" value="1.0" />
+    <xacro:property name="support_x" value="0.02"/>
+    <xacro:property name="support_y" value="0.02"/>
+    <xacro:property name="support_z" value="0.5"/>
+    <xacro:property name="support_m" value="0.5"/>
+
+    <xacro:property name="realsense_d435_width" value="0.09"/>
+    <xacro:property name="realsense_d435_height" value="0.025"/>
+    <xacro:property name="realsense_d435_depth" value="0.025"/>
+    <!-- Intel_RealSense_D400_Family_Datasheet_Jan2019.pdf, page 64 -->
+    <xacro:property name="realsense_d435_front_to_depth" value="0.0042" />
+    <!-- Measured from CAD file -->
+    <xacro:property name="realsense_d435_mount_hole_to_front" value="0.0149" />
+    <xacro:property name="realsense_d435_case_offset_x" value="${realsense_d435_front_to_depth - realsense_d435_depth/2.0}"/>
+    <!-- mounting hole to depth frame, Intel_RealSense_D400_Family_Datasheet_Jan2019.pdf, page 66 -->
+    <xacro:property name="realsense_d435_case_offset_y" value="-0.0175"/>
+    <xacro:property name="realsense_d435_case_offset_z" value="0.0"/>
+
+    <xacro:macro name="camera_macro" params="parent">
+      <!--camera support-->
+      <joint name="joint_camera_support" type="fixed">
+        <origin xyz="${location_x} ${location_y} ${location_z}" rpy="0 0 0"/>
+        <parent link="${parent}"/>
+        <child link="link_camera_support"/>
+      </joint>
+      <link name="link_camera_support">
+        <visual>
+          <origin xyz="0 0 ${0.5*support_z}" rpy="0 0 0" />
+          <geometry>
+            <box size="0.02 0.02 ${support_z}"/>
+          </geometry>
+        </visual>
+        <collision>
+          <origin xyz="0 0 0" rpy="0 0 0" />
+          <geometry>
+            <box size="0.02 0.02 ${support_z}"/>
+          </geometry>
+        </collision>
+        <inertial>
+          <mass value="0.5"/>
+          <origin xyz="0 0 0" rpy="0 0 0"/>
+          <inertia ixx="${1/12*support_m*(support_y*support_y+support_z*support_z)}" ixy="0" ixz="0" iyy="${1/12*support_m*(support_z*support_z+support_x*support_x)}" iyz="0" izz="${1/12*support_m*(support_x*support_x+support_y*support_y)}"/>
+        </inertial>
+      </link>
+
+      <!--camera-->
+      <joint name="joint_rs435" type="fixed">
+        <origin xyz="${support_x/2.0+realsense_d435_depth/2.0} 0 ${support_z}" rpy="0 0 0"/>
+        <parent link="link_camera_support"/>
+        <child link="link_rs435"/>
+      </joint>
+      <link name="link_rs435">
+        <inertial>
+          <mass value="0.072" />
+          <origin xyz="0 0 0" rpy="0 0 0" />
+          <inertia ixx="5.8083e-4" ixy="0" ixz="0" iyy="3.0833e-5" iyz="0" izz="5.9083e-4" />
+          <inertia ixx="1.0e-6" ixy="0" ixz="0" iyy="1.0e-6" iyz="0" izz="1.0e-6" />
+        </inertial>
+        <visual>
+          <origin xyz="${realsense_d435_front_to_depth} ${realsense_d435_case_offset_y} 0.0" rpy="${M_PI/2} 0 ${M_PI/2}" />
+          <geometry>
+            <mesh filename="package://dor_description/meshes/intel_realsense_d435/D435.dae" scale="0.001 0.001 0.001" />
+          </geometry>
+        </visual>
+        <collision>
+          <origin xyz="${realsense_d435_case_offset_x} ${realsense_d435_case_offset_y} ${realsense_d435_case_offset_z}" rpy="0 0 0" />
+          <geometry>
+            <box size="${realsense_d435_depth} ${realsense_d435_width} ${realsense_d435_height}" />
+          </geometry>
+        </collision>
+      </link>
+
+      <!--gazebo plugin-->
+      <gazebo reference="link_rs435">
+        <material>Gazebo/Grey</material>
+        <sensor type="depth" name="rs435">
+          <update_rate>30</update_rate>
+          <camera>
+            <horizontal_fov>${69.4*M_PI/180.0}</horizontal_fov>
+            <vertical_fov>${42.5*M_PI/180.0}</vertical_fov>
+            <diagonal_fov>${77.0*M_PI/180.0}</diagonal_fov>
+            <image>
+              <format>B8G8R8</format>
+              <!-- <width>1280</width>
+              <height>720</height> -->
+              <width>640</width>
+              <height>480</height>
+            </image>
+            <clip>
+              <near>0.15</near>
+              <far>9.0</far>
+            </clip>
+          </camera>
+          <plugin name="rs435_camera_plugin" filename="libgazebo_ros_openni_kinect.so">
+            <cameraName>rs435</cameraName>
+            <imageTopicName>color/image_raw</imageTopicName>
+            <cameraInfoTopicName>color/camera_info</cameraInfoTopicName>
+            <depthImageTopicName>depth/image_raw</depthImageTopicName>
+            <depthImageCameraInfoTopicName>depth/camera_info</depthImageCameraInfoTopicName>
+            <pointCloudTopicName>depth/points</pointCloudTopicName>
+            <frameName>rs435_frame</frameName>
+          </plugin>
+        </sensor>
+      </gazebo>
+
+    </xacro:macro>
+</robot>

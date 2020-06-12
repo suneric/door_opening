@@ -1,7 +1,7 @@
 <launch>
   <arg name="model" default="$(find dor_description)/urdf/mobile_robot.urdf.xacro"/>
-  <arg name="x" default="2.5"/>
-  <arg name="y" default="-2.0"/>
+  <arg name="x" default="-1.0"/>
+  <arg name="y" default="0.7"/>
   <arg name="z" default="0.0"/>
 
   <!-- We resume the logic in empty_world.launch, changing only the name of the world to be launched -->
