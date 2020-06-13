@@ -27,4 +27,7 @@
   <!--load controller-->
   <include file="$(find dor_control)/launch/mobile_robot_control.launch"/>
 
+  <!--inlcude camera-->
+  <include file="$(find dor_control)/launch/door_handle_detection.launch"/>
+
 </launch>
