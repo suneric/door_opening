@@ -33,4 +33,11 @@
       <xacro:property name="support_m" value="0.5"/>
     </xacro:camera_macro>
 
+    <xacro:include filename="$(find dor_description)/urdf/laser.urdf.xacro"/>
+    <xacro:laser_macro parent="link_chassis">
+      <xacro:property name="location_x" value="0.35" />
+      <xacro:property name="location_y" value="0" />
+      <xacro:property name="location_z" value="0" />
+    </xacro:laser_macro>
+
 </robot>
