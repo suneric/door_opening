@@ -56,7 +56,7 @@ if __name__ == '__main__':
 
     # load classfier
     dir = os.path.dirname(os.path.realpath(__file__))
-    dir = os.path.join(dir,'../classifier_usa/door_handle/cascade.xml')
+    dir = os.path.join(dir,'../classifier/door_handle/cascade.xml')
     classifer = cv2.CascadeClassifier(dir)
 
     fps = FPS().start()

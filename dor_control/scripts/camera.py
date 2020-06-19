@@ -62,7 +62,9 @@ class RSD435:
         # deproject
         x = (u-cx)/fx
         y = (v-cy)/fy
-        point3d = [depth*x/1000,depth*y/1000,depth/1000]
+        # scale = 0.001 # for simulation is 1
+        scale = 1
+        point3d = [scale*depth*x,scale*depth*y,scale*depth]
         return point3d
 
     #### data
