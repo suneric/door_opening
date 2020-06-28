@@ -1,4 +1,7 @@
 #!/usr/bin/env python
+
+# door handler detection with opencv cascade classifier
+
 import rospy
 from imutils.video import VideoStream
 from imutils.video import FPS
@@ -14,6 +17,7 @@ def detect_door_handle(sensor, classifer, fps):
         return
 
     H,W = sensor.image_size()
+    # print("image shape",H,W)
 
     # detect outles in gray image
     gray = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
@@ -56,7 +60,7 @@ if __name__ == '__main__':
 
     # load classfier
     dir = os.path.dirname(os.path.realpath(__file__))
-    dir = os.path.join(dir,'../classifier/door_handle/cascade.xml')
+    dir = os.path.join(dir,'../classifier/opencv/cascade.xml')
     classifer = cv2.CascadeClassifier(dir)
 
     fps = FPS().start()

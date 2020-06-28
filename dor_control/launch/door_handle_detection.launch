@@ -1,4 +1,4 @@
 <launch>
   <!--simulate rgbd camera-->
-  <node pkg="dor_control" type="detection.py" name="door_handle_detection" output="screen"/>
+  <node pkg="dor_control" type="detection_yolo.py" name="door_handle_detection" output="screen"/>
 </launch>
