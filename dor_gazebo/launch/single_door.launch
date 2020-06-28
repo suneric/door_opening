@@ -1,6 +1,6 @@
 <launch>
   <arg name="model" default="$(find dor_description)/urdf/mobile_robot.urdf.xacro"/>
-  <arg name="x" default="-1.0"/>
+  <arg name="x" default="2.0"/>
   <arg name="y" default="0.7"/>
   <arg name="z" default="0.0"/>
 
