@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 # door handle detection with yolo and opencv
-
 import cv2
 import numpy as np
 import os

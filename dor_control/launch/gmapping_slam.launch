@@ -1,0 +1,41 @@
+<launch>
+  <!--publish a transform from odom to base_frame-->
+  <node pkg="tf" type="static_transform_publisher" name="odom_base" args="1 0 0 0 0 0 odom link_chassis 100" />
+
+  <!--gmapping slam mapping-->
+  <node pkg="gmapping" type="slam_gmapping" name="gmapping_thing" output="screen" >
+    <remap from="scan" to="laser/scan" />
+    <remap from="odom" to="odom" />
+    <param name ="base_frame" value="link_chassis" />
+    <param name="map_update_interval" value="5.0"/>
+    <param name="maxRange" value="20.0"/>
+    <param name="maxUrange" value="80.0"/>
+    <param name="sigma" value="0.05"/>
+    <param name="kernelSize" value="1"/>
+    <param name="lstep" value="0.05"/>
+    <param name="astep" value="0.05"/>
+    <param name="iterations" value="5"/>
+    <param name="lsigma" value="0.075"/>
+    <param name="ogain" value="3.0"/>
+    <param name="lskip" value="10"/>
+    <param name="srr" value="0.01"/>
+    <param name="srt" value="0.02"/>
+    <param name="str" value="0.01"/>
+    <param name="stt" value="0.02"/>
+    <param name="linearUpdate" value="0.1"/>
+    <param name="angularUpdate" value="0.1"/>
+    <param name="temporalUpdate" value="-1.0"/>
+    <param name="resampleThreshold" value="0.5"/>
+    <param name="particles" value="80"/>
+    <param name="xmin" value="-10"/>
+    <param name="ymin" value="-10"/>
+    <param name="xmax" value="10"/>
+    <param name="ymax" value="10"/>
+    <param name="delta" value="0.05"/>
+    <param name="llsamplerange" value="0.01"/>
+    <param name="llsamplestep" value="0.01"/>
+    <param name="lasamplerange" value="0.005"/>
+    <param name="lasamplestep" value="0.005"/>
+  </node>
+
+</launch>

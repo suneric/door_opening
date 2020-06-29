@@ -1,0 +1,4 @@
+<launch>
+  <!--simulate rgbd camera-->
+  <node pkg="dor_control" type="build_map.py" name="build_room_map" output="screen"/>
+</launch>

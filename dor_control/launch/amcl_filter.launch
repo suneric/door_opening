@@ -1,0 +1,6 @@
+<launch>
+  <node pkg="amcl" type="amcl" name="amcl" output="screen">
+    <remap from="scan" to="laser/scan" />
+    <param name="use_map_topic" value="map"/>
+  </node>
+</launch>
