@@ -193,8 +193,10 @@
           <wheelSeparation>${wheelbase}</wheelSeparation>
           <wheelDiameter>2*${wheel_r}</wheelDiameter>
           <robotBaseFrame>link_chassis</robotBaseFrame>
+          <odometryFrame>odom</odometryFrame>
           <torque>20</torque>
           <topicName>cmd_vel</topicName>
+          <odometryTopic>odom</odometryTopic>
           <broadcastTF>true</broadcastTF>
         </plugin>
       </gazebo>

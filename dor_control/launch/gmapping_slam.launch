@@ -1,7 +1,4 @@
 <launch>
-  <!--publish a transform from odom to base_frame-->
-  <node pkg="tf" type="static_transform_publisher" name="odom_base" args="1 0 0 0 0 0 odom link_chassis 100" />
-
   <!--gmapping slam mapping-->
   <node pkg="gmapping" type="slam_gmapping" name="gmapping_thing" output="screen" >
     <remap from="scan" to="laser/scan" />
