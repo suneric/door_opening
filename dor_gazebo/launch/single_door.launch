@@ -3,6 +3,8 @@
   <arg name="x" default="7.0"/>
   <arg name="y" default="0.7"/>
   <arg name="z" default="0.0"/>
+  <arg name="map" default="$(find dor_control)/map/room.yaml"/>
+  <arg name="map_exist" value="$(eval arg('map') != '')"/>
 
   <!-- We resume the logic in empty_world.launch, changing only the name of the world to be launched -->
   <include file="$(find gazebo_ros)/launch/empty_world.launch">
@@ -30,12 +32,17 @@
   <!--inlcude camera-->
   <include file="$(find dor_control)/launch/door_handle_detection.launch"/>
 
-  <!--build map-->
-  <include file="$(find dor_control)/launch/build_room_map.launch"/>
-
   <!--slam with gmapping laser-->
   <include file="$(find dor_control)/launch/gmapping_slam.launch"/>
-<!-- 
-  <include file="$(find dor_control)/launch/amcl_filter.launch"/> -->
 
+  <group if="$(arg map_exist)">
+    <include file="$(find dor_control)/launch/load_room_map.launch">
+      <arg name="map_file" value="$(arg map)"/>
+    </include>
+  </group>
+  <group unless="$(arg map_exist)">
+    <include file="$(find dor_control)/launch/build_room_map.launch"/>
+  </group>
+<!--
+  <include file="$(find dor_control)/launch/amcl_filter.launch"/> -->
 </launch>
