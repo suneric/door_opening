@@ -1,5 +1,22 @@
 global_costmap:
-  global_frame: /map
-  robot_base_frame: /link_chassis
+  global_frame: map
+  robot_base_frame: link_chassis
   update_frequency: 5.0
   static_map: true
+
+  transform_tolerance: 0.1
+
+  static_layer:
+    track_unknown_space: true
+    enabled:             true
+    map_topic:           "/map"
+
+  inflation_layer:
+    enabled:              true
+    cost_scaling_factor:  10
+    inflation_radius:     0.3
+    track_unknown_space:  true
+
+  plugins:
+    - {name: static_layer,        type: "costmap_2d::StaticLayer"}
+    - {name: inflation_layer,     type: "costmap_2d::InflationLayer"}
