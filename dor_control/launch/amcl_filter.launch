@@ -1,6 +1,23 @@
 <launch>
   <node pkg="amcl" type="amcl" name="amcl" output="screen">
-    <remap from="scan" to="laser/scan" />
-    <param name="use_map_topic" value="map"/>
+    <remap from="scan" to="laser/scan"/>
+    <param name="odom_frame_id" value="odom"/>
+    <param name="base_frame_id" value="link_chassis"/>
+    <param name="global_frame_id" value="map"/>
+    <param name="odom_model_type" value="diff"/>
+    <param name="update_min_d" value="0.1"/>
+    <param name="update_min_a" value="0.1"/>
+    <param name="initial_pose_x" value="7.0"/>
+    <param name="initial_pose_y" value="0.7"/>
+    <param name="initial_pose_a" value="0.0"/>
+    <param name="initial_cov_xx" value="0.02"/>
+    <param name="initial_cov_yy" value="0.02"/>
+    <param name="initial_cov_aa" value="0.05"/>
+    <param name="use_map_topic" value="true"/>
+    <param name="first_map_only" value="true"/>
+    <param name="min_particles" value="1000"/>
+    <param name="max_particles" value="10000"/>
+    <param name="laser_min_range" value="-1.0"/>
+    <param name="laser_max_range" value="80.0"/>
   </node>
 </launch>

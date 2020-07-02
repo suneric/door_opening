@@ -32,17 +32,18 @@
   <!--inlcude camera-->
   <include file="$(find dor_control)/launch/door_handle_detection.launch"/>
 
-  <!--slam with gmapping laser-->
-  <include file="$(find dor_control)/launch/gmapping_slam.launch"/>
-
   <group if="$(arg map_exist)">
     <include file="$(find dor_control)/launch/load_room_map.launch">
       <arg name="map_file" value="$(arg map)"/>
     </include>
   </group>
   <group unless="$(arg map_exist)">
+    <!--slam with gmapping laser-->
+    <include file="$(find dor_control)/launch/gmapping_slam.launch"/>
     <include file="$(find dor_control)/launch/build_room_map.launch"/>
   </group>
-<!--
-  <include file="$(find dor_control)/launch/amcl_filter.launch"/> -->
+
+  <!--use amcl to localize robot-->
+  <include file="$(find dor_control)/launch/amcl_filter.launch"/>
+
 </launch>
