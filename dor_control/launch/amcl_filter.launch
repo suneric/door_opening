@@ -13,7 +13,7 @@
     <param name="initial_cov_xx" value="0.02"/>
     <param name="initial_cov_yy" value="0.02"/>
     <param name="initial_cov_aa" value="0.05"/>
-    <param name="use_map_topic" value="true"/>
+    <param name="use_map_topic" value="false"/>
     <param name="first_map_only" value="true"/>
     <param name="min_particles" value="1000"/>
     <param name="max_particles" value="10000"/>
