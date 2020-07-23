@@ -194,7 +194,7 @@
           <wheelDiameter>2*${wheel_r}</wheelDiameter>
           <robotBaseFrame>link_chassis</robotBaseFrame>
           <odometryFrame>odom</odometryFrame>
-          <torque>20</torque>
+          <torque>30</torque>
           <topicName>cmd_vel</topicName>
           <odometryTopic>odom</odometryTopic>
           <broadcastTF>true</broadcastTF>
@@ -206,26 +206,26 @@
       </gazebo>
 
       <gazebo reference="link_lrwheel">
-        <mu1>1</mu1>
-        <mu2>1</mu2>
+        <mu1>0.1</mu1>
+        <mu2>0.1</mu2>
         <material>Gazebo/Black</material>
       </gazebo>
 
       <gazebo reference="link_rrwheel">
-        <mu1>1</mu1>
-        <mu2>1</mu2>
+        <mu1>0.1</mu1>
+        <mu2>0.1</mu2>
         <material>Gazebo/Black</material>
       </gazebo>
 
       <gazebo reference="link_lfwheel">
-        <mu1>1</mu1>
-        <mu2>1</mu2>
+        <mu1>0.1</mu1>
+        <mu2>0.1</mu2>
         <material>Gazebo/Black</material>
       </gazebo>
 
       <gazebo reference="link_rfwheel">
-        <mu1>1</mu1>
-        <mu2>1</mu2>
+        <mu1>0.1</mu1>
+        <mu2>0.1</mu2>
         <material>Gazebo/Black</material>
       </gazebo>
 
