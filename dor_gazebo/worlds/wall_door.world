@@ -148,7 +148,7 @@
           </limit>
           <dynamics>
             <damping>1.0</damping>
-            <friction>1.0</friction>
+            <friction>5.0</friction>
           </dynamics>
           <use_parent_model_frame>true</use_parent_model_frame>
         </axis>
