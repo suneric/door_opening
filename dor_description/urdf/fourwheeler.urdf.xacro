@@ -5,7 +5,7 @@
     <xacro:property name="chassis_x" value="0.42" />
     <xacro:property name="chassis_y" value="0.4" />
     <xacro:property name="chassis_z" value="0.05" />
-    <xacro:property name="chassis_m" value="8" />
+    <xacro:property name="chassis_m" value="28" />
 
     <xacro:property name="wheel_r" value="0.075"/>
     <xacro:property name="wheel_l" value="0.05"/>
@@ -27,7 +27,7 @@
     <xacro:property name="support_x" value="0.5" />
     <xacro:property name="support_y" value="0.5" />
     <xacro:property name="support_z" value="0.5" />
-    <xacro:property name="support_m" value="26" />
+    <xacro:property name="support_m" value="6" />
 
     <!-- main triwheeler link -->
     <xacro:macro name="fourwheeler_base_macro">

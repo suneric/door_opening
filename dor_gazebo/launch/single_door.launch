@@ -1,6 +1,6 @@
 <launch>
   <arg name="model" default="$(find dor_description)/urdf/mobile_robot.urdf.xacro"/>
-  <arg name="x" default="6"/>
+  <arg name="x" default="-0.6"/>
   <arg name="y" default="0.8"/>
   <arg name="z" default="0.0"/>
   <arg name="map" default="$(find dor_control)/map/room.yaml"/>
@@ -46,5 +46,8 @@
 
   <!--path planning with move base-->
   <include file="$(find dor_control)/launch/path_planner.launch"/>
+
+  <!--launch rviz-->
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find dor_gazebo)/rviz.rviz"/>
 
 </launch>

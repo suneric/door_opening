@@ -4,7 +4,7 @@
 
   <!--load the controller (joint_horizontal_controller)-->
   <node name="controller_spawner" pkg="controller_manager" type="spawner" respawn="false"
-    output="screen" ns="/mobile_robot" args="joint_vertical_controller joint_state_controller"/>
+    output="screen" ns="/mobile_robot" args="joint_horizontal_controller joint_vertical_controller joint_state_controller"/>
 
   <!--convert joint states to TF transform for rvis, etc-->
   <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" respawn="false" output="screen">
