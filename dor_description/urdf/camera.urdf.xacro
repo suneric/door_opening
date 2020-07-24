@@ -4,10 +4,6 @@
     <xacro:property name="location_x" value="0" />
     <xacro:property name="location_y" value="0" />
     <xacro:property name="location_z" value="1.0" />
-    <xacro:property name="support_x" value="0.02"/>
-    <xacro:property name="support_y" value="0.02"/>
-    <xacro:property name="support_z" value="0.5"/>
-    <xacro:property name="support_m" value="0.5"/>
 
     <xacro:property name="realsense_d435_width" value="0.09"/>
     <xacro:property name="realsense_d435_height" value="0.025"/>
@@ -22,36 +18,10 @@
     <xacro:property name="realsense_d435_case_offset_z" value="0.0"/>
 
     <xacro:macro name="camera_macro" params="parent">
-      <!--camera support-->
-      <joint name="joint_camera_support" type="fixed">
-        <origin xyz="${location_x} ${location_y} ${location_z}" rpy="0 0 0"/>
-        <parent link="${parent}"/>
-        <child link="link_camera_support"/>
-      </joint>
-      <link name="link_camera_support">
-        <visual>
-          <origin xyz="0 0 ${0.5*support_z}" rpy="0 0 0" />
-          <geometry>
-            <box size="0.02 0.02 ${support_z}"/>
-          </geometry>
-        </visual>
-        <collision>
-          <origin xyz="0 0 0" rpy="0 0 0" />
-          <geometry>
-            <box size="0.02 0.02 ${support_z}"/>
-          </geometry>
-        </collision>
-        <inertial>
-          <mass value="0.5"/>
-          <origin xyz="0 0 0" rpy="0 0 0"/>
-          <inertia ixx="${1/12*support_m*(support_y*support_y+support_z*support_z)}" ixy="0" ixz="0" iyy="${1/12*support_m*(support_z*support_z+support_x*support_x)}" iyz="0" izz="${1/12*support_m*(support_x*support_x+support_y*support_y)}"/>
-        </inertial>
-      </link>
-
       <!--camera-->
       <joint name="joint_rs435" type="fixed">
-        <origin xyz="${support_x/2.0+realsense_d435_depth/2.0} 0 ${support_z}" rpy="0 0 0"/>
-        <parent link="link_camera_support"/>
+        <origin xyz="${location_x+realsense_d435_depth/2.0} ${location_y} ${location_z}" rpy="0 0 0"/>
+        <parent link="${parent}"/>
         <child link="link_rs435"/>
       </joint>
       <link name="link_rs435">

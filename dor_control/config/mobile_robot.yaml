@@ -5,11 +5,12 @@ mobile_robot:
     publish_rate: 50
 
   # Position Controllers
-  # joint_bar_controller:
+  # joint_horizontal_controller:
   #   type: effort_controllers/JointPositionController
-  #   joint: joint_bar_slider1
+  #   joint: joint_slider_slider
   #   pid: {p: 100.0, i: 0.01, d: 10.0}
-  joint_lift_controller:
+
+  joint_vertical_controller:
     type: effort_controllers/JointPositionController
-    joint: joint_slider1_slider2
+    joint: joint_bar_vslider
     pid: {p: 100.0, i: 0.01, d: 10.0}

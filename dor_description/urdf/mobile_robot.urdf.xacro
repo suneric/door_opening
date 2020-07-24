@@ -2,42 +2,28 @@
 
 <robot name="mobile_robot" xmlns:xacro="https://www.ros.org/wiki/xacro" >
     <xacro:include filename="$(find dor_description)/urdf/fourwheeler.urdf.xacro" />
-    <xacro:fourwheeler_base_macro>
-      <xacro:property name="chassis_x" value="0.6" />
-      <xacro:property name="chassis_y" value="0.4" />
-      <xacro:property name="chassis_z" value="0.2" />
-      <xacro:property name="support_x" value="0.6" />
-      <xacro:property name="support_y" value="0.4" />
-      <xacro:property name="support_z" value="0.6" />
-      <xacro:property name="wheel_r" value="0.15"/>
-      <xacro:property name="wheel_l" value="0.08"/>
-      <xacro:property name="wheelbase" value="0.4" />
-      <xacro:property name="track" value="0.48" />
-    </xacro:fourwheeler_base_macro>
+    <xacro:fourwheeler_base_macro/>
+    <!--mobile base 50 cm x 50 cm square-->
 
     <xacro:include filename="$(find dor_description)/urdf/operate_device.urdf.xacro" />
     <xacro:operate_device_macro parent="link_support" robotname="mobile_robot">
-      <xacro:property name="location_x" value="0.3" />
+      <xacro:property name="location_x" value="0.25" />
       <xacro:property name="location_y" value="0" />
       <xacro:property name="location_z" value="0.5" />
     </xacro:operate_device_macro>
 
     <xacro:include filename="$(find dor_description)/urdf/camera.urdf.xacro"/>
-    <xacro:camera_macro parent="link_support">
-      <xacro:property name="location_x" value="0.2" />
-      <xacro:property name="location_y" value="0" />
-      <xacro:property name="location_z" value="0.3" />
-      <xacro:property name="support_x" value="0.02"/>
-      <xacro:property name="support_y" value="0.02"/>
-      <xacro:property name="support_z" value="0.8"/>
-      <xacro:property name="support_m" value="0.5"/>
+    <xacro:camera_macro parent="link_bar">
+      <xacro:property name="location_x" value="0.025" />
+      <xacro:property name="location_y" value="0.0" />
+      <xacro:property name="location_z" value="0.5" />
     </xacro:camera_macro>
 
     <xacro:include filename="$(find dor_description)/urdf/laser.urdf.xacro"/>
-    <xacro:laser_macro parent="link_chassis">
-      <xacro:property name="location_x" value="0.35" />
+    <xacro:laser_macro parent="link_support">
+      <xacro:property name="location_x" value="0.275" />
       <xacro:property name="location_y" value="0" />
-      <xacro:property name="location_z" value="0" />
+      <xacro:property name="location_z" value="-0.1" />
     </xacro:laser_macro>
 
 </robot>

@@ -1,7 +1,7 @@
 <launch>
   <arg name="model" default="$(find dor_description)/urdf/mobile_robot.urdf.xacro"/>
-  <arg name="x" default="7.0"/>
-  <arg name="y" default="0.7"/>
+  <arg name="x" default="6"/>
+  <arg name="y" default="0.8"/>
   <arg name="z" default="0.0"/>
   <arg name="map" default="$(find dor_control)/map/room.yaml"/>
   <arg name="map_exist" value="$(eval arg('map') != '')"/>

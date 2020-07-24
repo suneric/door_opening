@@ -17,14 +17,14 @@
         <collision>
           <origin xyz="0 0 0" rpy="0 0 0"/>
           <geometry>
-            <box size="0.1 0.1 0.1"/>
+            <box size="0.05 0.05 0.05"/>
           </geometry>
         </collision>
 
         <visual>
           <origin xyz="0 0 0" rpy="0 0 0"/>
           <geometry>
-            <box size="0.1 0.1 0.1"/>
+            <box size="0.05 0.05 0.05"/>
           </geometry>
         </visual>
 
@@ -37,7 +37,7 @@
 
       <!-- hokuyo -->
       <gazebo reference="link_hokuyo">
-        <material>Gazebo/Orange</material>
+        <material>Gazebo/Blue</material>
         <sensor type="gpu_ray" name="head_hokuyo_sensor">
           <pose>0 0 0 0 0 0</pose>
           <visualize>false</visualize>
