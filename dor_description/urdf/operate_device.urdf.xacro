@@ -30,6 +30,12 @@
     <xacro:property name="tip_z" value="0.06" />
     <xacro:property name="tip_m" value="0.01" />
 
+    <xacro:property name="hook_x" value="0.15" />
+    <xacro:property name="hook_y" value="0.02" />
+    <xacro:property name="hook_z" value="0.02" />
+    <xacro:property name="hook_m" value="0.01" />
+
+
     <xacro:macro name="operate_device_macro" params="parent robotname">
       <joint name="joint_support_bar" type="fixed">
         <origin xyz="${location_x} ${location_y} ${location_z}" rpy="0 0 0"/>
@@ -166,6 +172,35 @@
         </inertial>
       </link>
 
+      <!--hook for opening door-->
+      <joint name="joint_bar_hook" type="revolute">
+        <origin xyz="${bar_x/2} ${bar_y/2} 0.1" rpy="0 0 0"/>
+        <parent link="link_bar"/>
+        <child link="link_hook"/>
+        <axis xyz="0 1 0"/>
+        <limit effort="30.0" lower="0.0" upper="1.57" velocity="0.5"/>
+      </joint>
+      <link name="link_hook">
+        <visual>
+          <origin xyz="${hook_x/2} ${hook_y/2} 0" rpy="0 0 0" />
+          <geometry>
+            <box size="${hook_x} ${hook_y} ${hook_z}"/>
+          </geometry>
+        </visual>
+        <collision>
+          <origin xyz="${hook_x/2} ${hook_y/2} 0" rpy="0 0 0" />
+          <geometry>
+            <box size="${hook_x} ${hook_y} ${hook_z}"/>
+          </geometry>
+        </collision>
+        <inertial>
+          <mass value="${hook_m}"/>
+          <origin xyz="${hook_x/2} ${hook_y/2} 0" rpy="0 0 0" />
+          <inertia ixx="${1/12*hook_m*(hook_y*hook_y+hook_z*hook_z)}" ixy="0" ixz="0" iyy="${1/12*hook_m*(hook_z*hook_z+hook_x*hook_x)}" iyz="0" izz="${1/12*hook_m*(hook_x*hook_x+hook_y*hook_y)}"/>
+        </inertial>
+      </link>
+
+
       <transmission name="vertical_trans">
         <type>transmission_interface/SimpleTransmission</type>
         <joint name="joint_bar_vslider">
@@ -188,18 +223,28 @@
         </actuator>
       </transmission>
 
+      <transmission name="hook_trans">
+        <type>transmission_interface/SimpleTransmission</type>
+        <joint name="joint_bar_hook">
+          <hardwareInterface>EffortJointInterface</hardwareInterface>
+        </joint>
+        <actuator name="hook_motor">
+          <hardwareInterface>EffortJointInterface</hardwareInterface>
+          <mechanicalReduction>1</mechanicalReduction>
+        </actuator>
+      </transmission>
+
       <gazebo reference="link_bar">
         <material>Gazebo/Orange</material>
-        <!-- <selfCollide>false</selfCollide> -->
       </gazebo>
       <gazebo reference="link_vslider">
         <material>Gazebo/Orange</material>
-        <!-- <selfCollide>false</selfCollide> -->
-        <!-- <turnOnGravity>false</turnOnGravity> -->
       </gazebo>
       <gazebo reference="link_hslider">
         <material>Gazebo/Orange</material>
-        <!-- <selfCollide>false</selfCollide> -->
+      </gazebo>
+      <gazebo reference="link_hook">
+        <material>Gazebo/Black</material>
       </gazebo>
 
       <gazebo>

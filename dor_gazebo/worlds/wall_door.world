@@ -126,16 +126,11 @@
             <upper>1.58</upper>
           </limit>
           <dynamics>
-            <damping>1.0</damping>
-            <friction>10</friction>
+            <damping>0</damping>
+            <friction>5.0</friction>
           </dynamics>
           <use_parent_model_frame>true</use_parent_model_frame>
         </axis>
-        <physics>
-          <ode>
-            <cfm_damping>1</cfm_damping>
-          </ode>
-        </physics>
       </joint>
       <joint name="hinge" type="revolute">
         <parent>frame</parent>
@@ -147,18 +142,13 @@
             <upper>1.58</upper>
           </limit>
           <dynamics>
-            <damping>1.0</damping>
+            <damping>0</damping>
             <friction>5.0</friction>
           </dynamics>
           <use_parent_model_frame>true</use_parent_model_frame>
         </axis>
-        <physics>
-          <ode>
-            <cfm_damping>1</cfm_damping>
-          </ode>
-        </physics>
       </joint>
-      <joint name="world_joint" type="revolute">
+      <joint name="world_joint" type="fixed">
         <child>frame</child>
         <parent>world</parent>
         <axis>
@@ -168,15 +158,10 @@
           </limit>
           <xyz>0 1 0</xyz>
           <dynamics>
-            <damping>1.0</damping>
+            <damping>0</damping>
           </dynamics>
           <use_parent_model_frame>true</use_parent_model_frame>
         </axis>
-        <physics>
-          <ode>
-            <cfm_damping>1</cfm_damping>
-          </ode>
-        </physics>
       </joint>
     </model>
     <model name="walls">
