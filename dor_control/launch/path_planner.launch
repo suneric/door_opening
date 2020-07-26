@@ -1,12 +1,13 @@
 <launch>
   <!--use amcl to localize robot-->
   <include file="$(find dor_control)/launch/amcl_filter.launch"/>
-  
+
   <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
     <rosparam file="$(find dor_control)/config/costmap_common_params.yaml" command="load" ns="global_costmap" />
     <rosparam file="$(find dor_control)/config/costmap_common_params.yaml" command="load" ns="local_costmap" />
     <rosparam file="$(find dor_control)/config/local_costmap_params.yaml" command="load" />
     <rosparam file="$(find dor_control)/config/global_costmap_params.yaml" command="load" />
+    <rosparam file="$(find dor_control)/config/base_global_planner_params.yaml" command="load"/>
     <rosparam file="$(find dor_control)/config/base_local_planner_params.yaml" command="load" />
   </node>
 </launch>
