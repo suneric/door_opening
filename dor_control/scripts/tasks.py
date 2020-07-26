@@ -117,11 +117,36 @@ class PullDoorTask(MoveTask):
         if status == 'reached':
             self.task_status = 'done'
 
+class DisinfectTask(MoveTask):
+    def __init__(self, pos):
+        MoveTask.__init__(self,pos)
+
+    def perform(self):
+        status = self.move_status()
+        if status == 'ready':
+            rospy.loginfo("move to disinfect...")
+            rospy.loginfo(self.goal)
+            self.move()
+
+        if status == 'reached':
+            self.task_status = 'done'
+
 # positions
 def get_charge_pose():
     pose = Pose()
     pose.position.x = 8.0
     pose.position.y = 1.0
+    pose.position.z = 0.0
+    pose.orientation.x = 0
+    pose.orientation.y = 0
+    pose.orientation.z = 0
+    pose.orientation.w = 1
+    return pose
+
+def get_disinfection_pose():
+    pose = Pose()
+    pose.position.x = 6.0
+    pose.position.y = 6.0
     pose.position.z = 0.0
     pose.orientation.x = 0
     pose.orientation.y = 0
@@ -155,8 +180,9 @@ if __name__ == '__main__':
     rospy.init_node("task_executor", anonymous=True, log_level=rospy.INFO)
     rate = rospy.Rate(10)
     task1 = ChargeTask(get_charge_pose())
-    task2 = PushDoorTask(get_door_push_pose())
-    task3 = PullDoorTask(get_door_pull_pose())
+    task2 = DisinfectTask(get_disinfection_pose())
+    task3 = PushDoorTask(get_door_push_pose())
+    task4 = PullDoorTask(get_door_pull_pose())
     try:
         while not rospy.is_shutdown():
             if not task1.is_done():
@@ -168,7 +194,10 @@ if __name__ == '__main__':
                     if not task3.is_done():
                         task3.perform()
                     else:
-                        rospy.logininf("all tasks are performed.")
+                        if not task3.is_done():
+                            task4.perform()
+                        else:
+                            rospy.logininf("all tasks are performed.")
         rate.sleep()
     except rospy.ROSInterruptException:
         pass
