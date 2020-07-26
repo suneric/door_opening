@@ -16,6 +16,7 @@ class MoveTask:
 
         self.client = actionlib.SimpleActionClient('move_base', MoveBaseAction)
         self.client.wait_for_server()
+        self.last_time = rospy.Time.now()
 
     def move_status(self):
         return self.goal_status
@@ -27,17 +28,34 @@ class MoveTask:
             return False
 
     def reach_cb(self,msg,result):
-        self.goal_status = 'reached'
+        # print('msg: ', msg, 'result: ', result)
+        if msg == GoalStatus.SUCCEEDED: # 3
+            self.goal_status = 'reached'
+        else:
+            print("update path plan: ")
+            self.move()
 
     def moving_cb(self):
         self.goal_status = "moving"
 
+    def feedback_cb(self, feedback):
+        # reset the goal every minute
+        # print(feedback)
+        current_time = rospy.Time.now()
+        duration = current_time.secs - self.last_time.secs
+        if duration > 60:
+            print("update path plan: ")
+            self.move()
+
     def move(self):
+        self.last_time = rospy.Time.now()
         goal = MoveBaseGoal()
         goal.target_pose.header.frame_id = "map"
-        goal.target_pose.header.stamp = rospy.Time.now()
+        goal.target_pose.header.stamp = self.last_time
         goal.target_pose.pose = self.goal
-        self.client.send_goal(goal, self.reach_cb, self.moving_cb)
+        self.client.send_goal(goal, self.reach_cb, self.moving_cb, self.feedback_cb)
+        self.goal_status = 'moving'
+        rospy.loginfo(self.goal)
 
 class ChargeTask(MoveTask):
     def __init__(self,pos):
@@ -47,7 +65,6 @@ class ChargeTask(MoveTask):
         status = self.move_status()
         if status == 'ready':
             rospy.loginfo("move to charge...")
-            rospy.loginfo(self.goal)
             self.move()
 
         if status == 'reached':
@@ -93,7 +110,6 @@ class PushDoorTask(MoveTask):
         status = self.move_status()
         if status == 'ready':
             rospy.loginfo("move to push door...")
-            rospy.loginfo(self.goal)
             self.move()
 
         if status == 'reached':
@@ -114,7 +130,6 @@ class PullDoorTask(MoveTask):
         status = self.move_status()
         if status == 'ready':
             rospy.loginfo("move to pull door...")
-            rospy.loginfo(self.goal)
             self.move()
 
         if status == 'reached':
@@ -148,7 +163,7 @@ def get_charge_pose():
 
 def get_disinfection_pose():
     pose = Pose()
-    pose.position.x = 6.0
+    pose.position.x = 1.5
     pose.position.y = 6.0
     pose.position.z = 0.0
     pose.orientation.x = 0

@@ -3,7 +3,7 @@ TrajectoryPlannerROS:
   acc_lim_y: 0.0
   acc_lim_theta: 1.57
   max_vel_x: 5.0
-  min_vel_x: 1.0
+  min_vel_x: 2.5
   max_vel_y: 0.0
   min_vel_y: 0.0
   max_vel_theta: 6.28
@@ -11,15 +11,26 @@ TrajectoryPlannerROS:
   min_in_place_vel_theta: 3.14 # the miminum rotation velocity allowed for the base while performing in-place rotation in rad/sec
   escape_vel: -0.1
   holonomic_robot: false # no strafing velocity commands will not be issued
-  meter_scoring: true
-  heading_lookahead: 1.5
-  heading_scoring: true
   dwa: true
   global_frame_id: "odom" # should be same frame as in local costmap's global frame
+
+  sim_time: 1.0
+  sim_granularity: 0.02
+  angular_sim_granularity: 0.02
   vx_samples: 5
-  yaw_goal_tolerance: 0.05
-  xy_goal_telorance: 0.1
+  vtheta_samples: 10
+  yaw_goal_tolerance: 0.3
+  xy_goal_telorance: 0.3
   latch_xy_goal_tolerance: false # rotate itself at goal if true
   oscillation_reset_dist: 0.01
   prune_plan: true
   controller_frequency: 20.0
+
+  # trajectory scoring params
+  meter_scoring: true # whether the gdist_scal and pdist_scale params should assume that goal_distance and path_distance are expressed in meters or cells, default in cells (false)_
+  occdist_scale: 0.01 # the weighting for how much the controller should atemp to avoid obstacle, default 0.01
+  path_distance_bias: 0.6 # the weighting for how much the controller should stay close to thge path it was give, default 0.6
+  goal_distance_bias: 0.8 # the weighting for how much the controller should attempt to reach its local goal, also control speed, default 0.8
+  heading_lookahead: 0.5 # how far to look ahead in meters when scoring different in place rotation trajectory
+  heading_scoring: true # whether to score based on the robot's heading to the path
+  heading_socring_timestep: 0.5 # how far to look ahead in time
