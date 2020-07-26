@@ -2,6 +2,7 @@
 import rospy
 import numpy as np
 import actionlib
+from std_msgs.msg import Float64
 from actionlib_msgs.msg import GoalStatus
 from geometry_msgs.msg import Pose, Twist, PoseWithCovarianceStamped
 from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal
@@ -57,7 +58,9 @@ class PushDoorTask(MoveTask):
     def __init__(self,pos):
         MoveTask.__init__(self,pos)
         self.robot_pos = 'in' #'out'
-
+        self.vel_pub = rospy.Publisher('cmd_vel', Twist, queue_size=1)
+        self.hook_pub = rospy.Publisher('mobile_robot/joint_hook_controller/command', Float64, queue_size=1)
+        self.pose_sub = rospy.Subscriber('amcl_pose', PoseWithCovarianceStamped, self.amcl_cb)
     def amcl_cb(self,data):
         #print(data)
         amcl_x = data.pose.pose.position.x
@@ -65,6 +68,7 @@ class PushDoorTask(MoveTask):
             self.robot_pos = 'out'
 
     def push_door(self):
+        self.hook_pub.publish(1.57)
         vel_msg = Twist()
         vel_msg.linear.x = 2.0 # forward
         vel_msg.linear.y = 0
@@ -75,6 +79,7 @@ class PushDoorTask(MoveTask):
         self.vel_pub.publish(vel_msg)
 
     def stop(self):
+        self.hook_pub.publish(0.0)
         vel_msg = Twist()
         vel_msg.linear.x = 2.0 # forward
         vel_msg.linear.y = 0
@@ -92,8 +97,6 @@ class PushDoorTask(MoveTask):
             self.move()
 
         if status == 'reached':
-            self.vel_pub = rospy.Publisher('cmd_vel', Twist, queue_size=1)
-            self.pose_sub = rospy.Subscriber('amcl_pose', PoseWithCovarianceStamped, self.amcl_cb)
             if self.robot_pos != 'out':
                 self.push_door()
                 self.task_status = 'inprogress'
@@ -156,7 +159,7 @@ def get_disinfection_pose():
 
 def get_door_push_pose():
     pose = Pose()
-    pose.position.x = 1.0
+    pose.position.x = 1.5
     pose.position.y = 5.7
     pose.position.z = 0.0
     pose.orientation.x = 0
@@ -194,7 +197,7 @@ if __name__ == '__main__':
                     if not task3.is_done():
                         task3.perform()
                     else:
-                        if not task3.is_done():
+                        if not task4.is_done():
                             task4.perform()
                         else:
                             rospy.logininf("all tasks are performed.")
