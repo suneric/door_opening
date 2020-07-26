@@ -11,7 +11,7 @@
     <xacro:property name="bar_m" value="0.5" />
 
     <xacro:property name="vslider_x" value="0.02" />
-    <xacro:property name="vslider_y" value="0.5" />
+    <xacro:property name="vslider_y" value="0.2" />
     <xacro:property name="vslider_z" value="0.05" />
     <xacro:property name="vslider_m" value="0.2" />
 
@@ -30,11 +30,9 @@
     <xacro:property name="tip_z" value="0.06" />
     <xacro:property name="tip_m" value="0.01" />
 
-    <xacro:property name="hook_x" value="0.15" />
-    <xacro:property name="hook_y" value="0.02" />
-    <xacro:property name="hook_z" value="0.02" />
+    <xacro:property name="hook_l" value="0.2" />
+    <xacro:property name="hook_r" value="0.01" />
     <xacro:property name="hook_m" value="0.01" />
-
 
     <xacro:macro name="operate_device_macro" params="parent robotname">
       <joint name="joint_support_bar" type="fixed">
@@ -68,8 +66,8 @@
         <parent link="link_bar"/>
         <child link="link_vslider"/>
         <axis xyz="0 0 1"/>
-        <limit upper="${bar_z-0.05}" lower="0.0" effort="100.0" velocity="0.5"/>
-        <!-- <dynamics damping="0" friction="0.2"/> -->
+        <limit upper="${bar_z-0.05}" lower="0.0" effort="1000.0" velocity="0.5"/>
+        <dynamics damping="0" friction="1.0"/>
       </joint>
 
       <link name="link_vslider">
@@ -97,8 +95,8 @@
         <parent link="link_vslider"/>
         <child link="link_hslider"/>
         <axis xyz="0 1 0"/>
-        <limit upper="0.225" lower="-0.225" effort="100.0" velocity="0.5"/>
-        <!-- <dynamics damping="0" friction="0.2"/> -->
+        <limit upper="0.225" lower="-0.225" effort="1000.0" velocity="0.5"/>
+        <dynamics damping="0" friction="1.0"/>
       </joint>
 
       <link name="link_hslider">
@@ -174,32 +172,43 @@
 
       <!--hook for opening door-->
       <joint name="joint_bar_hook" type="revolute">
-        <origin xyz="${bar_x/2} ${bar_y/2} 0.1" rpy="0 0 0"/>
+        <origin xyz="${bar_x/2} ${bar_y/2} 0" rpy="0 0 0"/>
         <parent link="link_bar"/>
         <child link="link_hook"/>
         <axis xyz="0 1 0"/>
-        <limit effort="30.0" lower="0.0" upper="1.57" velocity="0.5"/>
+        <limit effort="1000.0" lower="0.0" upper="${0.5*PI}" velocity="0.5"/>
+        <dynamics damping="0" friction="1.0"/>
       </joint>
       <link name="link_hook">
         <visual>
-          <origin xyz="${hook_x/2} ${hook_y/2} 0" rpy="0 0 0" />
+          <origin xyz="${hook_r} ${hook_r} ${hook_l/2}" rpy="0 0 0" />
           <geometry>
-            <box size="${hook_x} ${hook_y} ${hook_z}"/>
+            <cylinder length="${hook_l}" radius="${hook_r}"/>
           </geometry>
         </visual>
         <collision>
-          <origin xyz="${hook_x/2} ${hook_y/2} 0" rpy="0 0 0" />
+          <origin xyz="${hook_r} ${hook_r} ${hook_l/2}" rpy="0 0 0" />
           <geometry>
-            <box size="${hook_x} ${hook_y} ${hook_z}"/>
+            <cylinder length="${hook_l}" radius="${hook_r}"/>
           </geometry>
         </collision>
         <inertial>
           <mass value="${hook_m}"/>
-          <origin xyz="${hook_x/2} ${hook_y/2} 0" rpy="0 0 0" />
-          <inertia ixx="${1/12*hook_m*(hook_y*hook_y+hook_z*hook_z)}" ixy="0" ixz="0" iyy="${1/12*hook_m*(hook_z*hook_z+hook_x*hook_x)}" iyz="0" izz="${1/12*hook_m*(hook_x*hook_x+hook_y*hook_y)}"/>
+          <origin xyz="${hook_r} ${hook_r} ${hook_l/2}" rpy="0 0 0" />
+          <inertia ixx="${1/3*hook_m*hook_l*hook_l}" ixy="0" ixz="0" iyy="0" iyz="0" izz="${1/3*hook_m*hook_l*hook_l}"/>
         </inertial>
       </link>
 
+      <transmission name="hook_trans">
+        <type>transmission_interface/SimpleTransmission</type>
+        <joint name="joint_bar_hook">
+          <hardwareInterface>EffortJointInterface</hardwareInterface>
+        </joint>
+        <actuator name="hook_motor">
+          <hardwareInterface>EffortJointInterface</hardwareInterface>
+          <mechanicalReduction>1</mechanicalReduction>
+        </actuator>
+      </transmission>
 
       <transmission name="vertical_trans">
         <type>transmission_interface/SimpleTransmission</type>
@@ -223,28 +232,20 @@
         </actuator>
       </transmission>
 
-      <transmission name="hook_trans">
-        <type>transmission_interface/SimpleTransmission</type>
-        <joint name="joint_bar_hook">
-          <hardwareInterface>EffortJointInterface</hardwareInterface>
-        </joint>
-        <actuator name="hook_motor">
-          <hardwareInterface>EffortJointInterface</hardwareInterface>
-          <mechanicalReduction>1</mechanicalReduction>
-        </actuator>
-      </transmission>
-
       <gazebo reference="link_bar">
         <material>Gazebo/Orange</material>
       </gazebo>
       <gazebo reference="link_vslider">
         <material>Gazebo/Orange</material>
+        <turnGravityOff>false</turnGravityOff>
       </gazebo>
       <gazebo reference="link_hslider">
         <material>Gazebo/Orange</material>
+        <turnGravityOff>false</turnGravityOff>
       </gazebo>
       <gazebo reference="link_hook">
         <material>Gazebo/Black</material>
+        <turnGravityOff>false</turnGravityOff>
       </gazebo>
 
       <gazebo>

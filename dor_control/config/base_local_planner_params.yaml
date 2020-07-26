@@ -2,21 +2,21 @@ TrajectoryPlannerROS:
   acc_lim_x: 1.0
   acc_lim_y: 0.0
   acc_lim_theta: 1.57
-  max_vel_x: 3.0
-  min_vel_x: 1.25
+  max_vel_x: 5.0
+  min_vel_x: 2.0
   max_vel_y: 0.0
   min_vel_y: 0.0
   max_vel_theta: 6.28
   min_vel_theta: -0.1
   min_in_place_vel_theta: 3.14 # the miminum rotation velocity allowed for the base while performing in-place rotation in rad/sec
-  escape_vel: -0.1
+  escape_vel: -0.2
   holonomic_robot: false # no strafing velocity commands will not be issued
   meter_scoring: true
   heading_lookahead: 1.5
   heading_scoring: true
   dwa: true
   global_frame_id: "odom" # should be same frame as in local costmap's global frame
-  vx_samples: 5
+  vx_samples: 10
   yaw_goal_tolerance: 0.05
   xy_goal_telorance: 0.1
   latch_xy_goal_tolerance: false # rotate itself at goal if true

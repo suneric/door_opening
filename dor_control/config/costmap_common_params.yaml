@@ -3,6 +3,6 @@ raytrace_range: 3.0
 footprint: [[0.25, 0.25],[-0.25, 0.25],[-0.25, -0.25],[0.25,-0.25]] # counter-closkwise
 # footprint: [[0.2, 0.24],[0.2,-0.24],[-0.2, -0.24],[-0.2, 0.24]] # clockwise
 #robot_radius: ir_of_robot
-inflation_radius: 0.6
+inflation_radius: 0.7
 observation_sources: laser_scan_sensor
 laser_scan_sensor: {sensor_frame: link_hokuyo, data_type: LaserScan, topic: laser/scan, marking: true, clearing: true}
