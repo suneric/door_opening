@@ -1,5 +1,5 @@
 NavfnROS:
-  allow_unknown: false
+  allow_unknown: true
   use_dijkstra: true
   default_tolerance: 0.02
   cost_factor: 1.0

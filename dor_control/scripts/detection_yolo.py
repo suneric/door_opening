@@ -6,6 +6,7 @@ import os
 import rospy
 from math import ceil
 from camera import RSD435
+from std_msgs.msg import String
 
 def get_output_layers(net):
     layer_names = net.getLayerNames()
@@ -103,6 +104,8 @@ def detect_door_handle(sensor,net,classes,colors):
     nms_threshold = 0.4
     indices = cv2.dnn.NMSBoxes(boxes, confidences, conf_threshold, nms_threshold)
 
+    doorFound = False
+    handleFound = False
     text_horizontal = 0
     for i in indices:
         i = i[0]
@@ -113,6 +116,10 @@ def detect_door_handle(sensor,net,classes,colors):
         h = box[3]
         class_id = class_ids[i]
         label = str(classes[class_id])
+        if label == 'door':
+            doorFound = True
+        elif label == 'handle':
+            handleFound = True
         color = colors[class_id]
         cv2.rectangle(img, (x,y), (x+w,y+h), color, 2)
         cv2.putText(img, label, (x-10,y-10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
@@ -136,7 +143,10 @@ def detect_door_handle(sensor,net,classes,colors):
     cv2.imshow('door handle measurement',img)
     cv2.waitKey(3)
 
+    return doorFound and handleFound
+
 if __name__ == '__main__':
+    pub = rospy.Publisher('detection/door_handle', String, queue_size=1)
     rospy.init_node("door_handle_detection", anonymous=True, log_level=rospy.INFO)
     sensor = RSD435()
     # load classfier
@@ -154,7 +164,10 @@ if __name__ == '__main__':
     try:
         while not rospy.is_shutdown():
             if sensor.ready():
-                detect_door_handle(sensor,net,classes,colors)
+                if detect_door_handle(sensor,net,classes,colors):
+                    pub.publish("found")
+                else:
+                    pub.publish("not found")
             rate.sleep()
     except rospy.ROSInterruptException:
         pass

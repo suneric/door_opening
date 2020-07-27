@@ -183,7 +183,10 @@
             </box>
           </geometry>
           <material>
-            <diffuse>0.0 1.0 0.0 1</diffuse>
+            <script>
+              <uri>file://media/materials/scripts/Gazebo.material</uri>
+              <name>Gazebo/Green</name>
+            </script>
           </material>
         </visual>
       </link>
@@ -204,7 +207,10 @@
             </box>
           </geometry>
           <material>
-            <diffuse>0.0 1.0 0.0 1</diffuse>
+            <script>
+              <uri>file://media/materials/scripts/Gazebo.material</uri>
+              <name>Gazebo/Green</name>
+            </script>
           </material>
         </visual>
       </link>
@@ -225,7 +231,10 @@
             </box>
           </geometry>
           <material>
-            <diffuse>0.0 1.0 0.0 1</diffuse>
+            <script>
+              <uri>file://media/materials/scripts/Gazebo.material</uri>
+              <name>Gazebo/Green</name>
+            </script>
           </material>
         </visual>
       </link>
@@ -246,7 +255,10 @@
             </box>
           </geometry>
           <material>
-            <diffuse>0.0 1.0 0.0 1</diffuse>
+            <script>
+              <uri>file://media/materials/scripts/Gazebo.material</uri>
+              <name>Gazebo/Green</name>
+            </script>
           </material>
         </visual>
       </link>
@@ -267,7 +279,10 @@
             </box>
           </geometry>
           <material>
-            <diffuse>0.0 1.0 0.0 1</diffuse>
+            <script>
+              <uri>file://media/materials/scripts/Gazebo.material</uri>
+              <name>Gazebo/Green</name>
+            </script>
           </material>
         </visual>
       </link>
@@ -288,7 +303,10 @@
             </box>
           </geometry>
           <material>
-            <diffuse>0.0 1.0 0.0 1</diffuse>
+            <script>
+              <uri>file://media/materials/scripts/Gazebo.material</uri>
+              <name>Gazebo/Green</name>
+            </script>
           </material>
         </visual>
       </link>
@@ -311,7 +329,7 @@
           <material>
             <script>
               <uri>file://media/materials/scripts/Gazebo.material</uri>
-              <name>Gazebo/Yellow</name>
+              <name>Gazebo/Green</name>
             </script>
           </material>
         </visual>
@@ -360,6 +378,30 @@
             <script>
               <uri>file://media/materials/scripts/texture.material</uri>
               <name>dor_gazebo/socket</name>
+            </script>
+          </material>
+        </visual>
+      </link>
+      <link name="wall_8">
+        <collision name="wall_8_collision">
+          <pose>-3.05 3.0 1.25342 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.1 12 2.50684</size>
+            </box>
+          </geometry>
+        </collision>
+        <visual name="wall_8_visual">
+          <pose>-3.05 3.0 1.25342 0 0 00</pose>
+          <geometry>
+            <box>
+              <size>0.1 12 2.50684</size>
+            </box>
+          </geometry>
+          <material>
+            <script>
+              <uri>file://media/materials/scripts/Gazebo.material</uri>
+              <name>Gazebo/Green</name>
             </script>
           </material>
         </visual>
@@ -427,6 +469,56 @@
           </geometry>
           <material>
             <diffuse>1.0 0.0 0.0 1</diffuse>
+          </material>
+        </visual>
+      </link>
+      <link name="obstacle_4">
+        <collision name="obstacle_4_collision">
+          <pose>6.0 7.0 0.2 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.6 0.6 0.4</size>
+            </box>
+          </geometry>
+        </collision>
+        <visual name="obstacle_4_visual">
+          <pose>6.0 7.0 0.2 0 0 0</pose>
+          <geometry>
+            <box>
+                <size>0.6 0.6 0.4</size>
+            </box>
+          </geometry>
+          <material>
+          <script>
+            <uri>file://media/materials/scripts/Gazebo.material</uri>
+            <name>Gazebo/Black</name>
+          </script>
+          </material>
+        </visual>
+      </link>
+      <link name="obstacle_5">
+        <collision name="obstacle_5_collision">
+          <pose>8.0 4.0 0.25 0 0 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.3</radius>
+              <length>0.5</length>
+            </cylinder>
+          </geometry>
+        </collision>
+        <visual name="obstacle_5_visual">
+          <pose>8.0 4.0 0.25 0 0 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.3</radius>
+              <length>0.5</length>
+            </cylinder>
+          </geometry>
+          <material>
+          <script>
+            <uri>file://media/materials/scripts/Gazebo.material</uri>
+            <name>Gazebo/Black</name>
+          </script>
           </material>
         </visual>
       </link>

@@ -6,20 +6,21 @@ from std_msgs.msg import Float64
 from actionlib_msgs.msg import GoalStatus
 from geometry_msgs.msg import Pose, Twist, PoseWithCovarianceStamped
 from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal
+from tf.transformations import quaternion_from_euler
+from std_msgs.msg import String
 
 # base class of move task
 class MoveTask:
     def __init__(self,goal):
         self.goal = goal
         self.goal_status = 'ready' # moving, reached
-        self.task_status = 'inprogress' # 'done'
-
+        self.task_status = 'ready' # inprogress, done
         self.client = actionlib.SimpleActionClient('move_base', MoveBaseAction)
         self.client.wait_for_server()
         self.last_time = rospy.Time.now()
-
-    def move_status(self):
-        return self.goal_status
+        self.vel_pub = rospy.Publisher('cmd_vel', Twist, queue_size=1)
+        self.pose_sub = rospy.Subscriber('amcl_pose', PoseWithCovarianceStamped, self.amcl_cb)
+        self.amcl_pose = None
 
     def is_done(self):
         if self.task_status == 'done':
@@ -27,13 +28,15 @@ class MoveTask:
         else:
             return False
 
+    def amcl_cb(self,data):
+        self.amcl_pose = data.pose.pose.position
+
     def reach_cb(self,msg,result):
-        # print('msg: ', msg, 'result: ', result)
         if msg == GoalStatus.SUCCEEDED: # 3
             self.goal_status = 'reached'
         else:
             print("update path plan: ")
-            self.move()
+            self.auto_move()
 
     def moving_cb(self):
         self.goal_status = "moving"
@@ -43,11 +46,11 @@ class MoveTask:
         # print(feedback)
         current_time = rospy.Time.now()
         duration = current_time.secs - self.last_time.secs
-        if duration > 60:
+        if duration > 120:
             print("update path plan: ")
-            self.move()
+            self.auto_move()
 
-    def move(self):
+    def auto_move(self):
         self.last_time = rospy.Time.now()
         goal = MoveBaseGoal()
         goal.target_pose.header.frame_id = "map"
@@ -55,152 +58,194 @@ class MoveTask:
         goal.target_pose.pose = self.goal
         self.client.send_goal(goal, self.reach_cb, self.moving_cb, self.feedback_cb)
         self.goal_status = 'moving'
+        rospy.loginfo("autonomously moving to ")
         rospy.loginfo(self.goal)
 
+    def drive_forward(self,v=1.0):
+        self.vel_pub.publish(self.vel_msg(v,0))
+
+    def drive_rotation(self,v=1.0):
+        self.vel_pub.publish(self.vel_msg(0,v))
+
+    def stop_drive(self):
+        self.vel_pub.publish(self.vel_msg(0,0))
+
+    def vel_msg(self,vx=1.0,vr=1.0):
+        msg = Twist()
+        msg.linear.x = vx
+        msg.linear.y = 0
+        msg.linear.z = 0
+        msg.angular.x = 0
+        msg.angular.y = 0
+        msg.angular.z = vr
+        return msg
+
+# self-charing task
 class ChargeTask(MoveTask):
     def __init__(self,pos):
         MoveTask.__init__(self,pos)
+        self.vslider_pub = rospy.Publisher('mobile_robot/joint_vertical_controller/command', Float64, queue_size=1)
+        self.hslider_pub = rospy.Publisher('mobile_robot/joint_horizontal_controller/command', Float64, queue_size=1)
+        self.walloutlet_found = False
+        self.detection_sub = rospy.Subscriber('detection/walloutlet', String, self.detection_cb)
+
+    def detection_cb(self,msg):
+        if msg.data == "found":
+            self.walloutlet_found = True
+
+    def auto_charge(self):
+        if self.task_status == 'ready':
+            self.task_status = 'inprogress'
+            rospy.loginfo("approaching to walloutlet...")
+            self.vslider_pub.publish(0.05)
+            self.hslider_pub.publish(0.0)
+
+        elif self.task_status == 'inprogress':
+            if self.amcl_pose.x < 8.5:
+                self.drive_forward()
+            else:
+                self.drive_forward(0.5)
+                if self.walloutlet_found:
+                    rospy.loginfo('found walloutlet')
+                    self.stop_drive()
+                    rospy.loginfo("auto charging (30 seconds)...")
+                    rospy.sleep(30) # sleep 30 secs
+                    self.task_status = 'done'
+                    rospy.loginfo("auto charge done")
+                elif self.amcl_pose.x > 9.3:
+                    rospy.loginfo('too close to the wall')
+                    self.stop_drive()
+                    self.task_status = 'done'
+        else:
+            rospy.loginfo("auto charge done")
 
     def perform(self):
-        status = self.move_status()
-        if status == 'ready':
-            rospy.loginfo("move to charge...")
-            self.move()
+        if self.goal_status == 'ready':
+            self.auto_move()
+        if self.goal_status == 'reached':
+            self.auto_charge()
 
-        if status == 'reached':
-            self.task_status = 'done'
-
-
+# push door task
 class PushDoorTask(MoveTask):
     def __init__(self,pos):
         MoveTask.__init__(self,pos)
-        self.robot_pos = 'in' #'out'
-        self.vel_pub = rospy.Publisher('cmd_vel', Twist, queue_size=1)
         self.hook_pub = rospy.Publisher('mobile_robot/joint_hook_controller/command', Float64, queue_size=1)
-        self.pose_sub = rospy.Subscriber('amcl_pose', PoseWithCovarianceStamped, self.amcl_cb)
-    def amcl_cb(self,data):
-        #print(data)
-        amcl_x = data.pose.pose.position.x
-        if amcl_x < -1.0:
-            self.robot_pos = 'out'
+        self.vslider_pub = rospy.Publisher('mobile_robot/joint_vertical_controller/command', Float64, queue_size=1)
+        self.hslider_pub = rospy.Publisher('mobile_robot/joint_horizontal_controller/command', Float64, queue_size=1)
+        self.door_found = False
+        self.detection_sub = rospy.Subscriber('detection/door_handle', String, self.detection_cb)
+
+    def detection_cb(self,msg):
+        if msg.data == 'found':
+            self.door_found = True
 
     def push_door(self):
-        self.hook_pub.publish(1.57)
-        vel_msg = Twist()
-        vel_msg.linear.x = 2.0 # forward
-        vel_msg.linear.y = 0
-        vel_msg.linear.z = 0
-        vel_msg.angular.x = 0
-        vel_msg.angular.y = 0
-        vel_msg.angular.z = 0
-        self.vel_pub.publish(vel_msg)
-
-    def stop(self):
-        self.hook_pub.publish(0.0)
-        vel_msg = Twist()
-        vel_msg.linear.x = 2.0 # forward
-        vel_msg.linear.y = 0
-        vel_msg.linear.z = 0
-        vel_msg.angular.x = 0
-        vel_msg.angular.y = 0
-        vel_msg.angular.z = 0
-        self.vel_pub.publish(vel_msg)
+        if self.task_status == 'ready':
+            self.task_status = 'inprogress'
+            rospy.loginfo("pushing door...")
+            self.vslider_pub.publish(1.0)
+            self.hslider_pub.publish(0.0)
+            self.hook_pub.publish(1.57)
+        elif self.task_status == 'inprogress':
+            if self.amcl_pose.x > -1.5:
+                if self.door_found:
+                    self.drive_forward(1.0)
+                else:
+                    rospy.loginfo("detecting door and door handle...")
+                    self.drive_forward(0.5)
+            else:
+                self.stop_drive()
+                self.hook_pub.publish(0.0)
+                self.task_status = 'done'
+                rospy.loginfo("push door done")
+        else:
+            rospy.loginfo("push door done")
 
     def perform(self):
-        status = self.move_status()
-        if status == 'ready':
-            rospy.loginfo("move to push door...")
-            self.move()
+        if self.goal_status == 'ready':
+            self.auto_move()
+        if self.goal_status == 'reached':
+            self.push_door()
 
-        if status == 'reached':
-            if self.robot_pos != 'out':
-                self.push_door()
-                self.task_status = 'inprogress'
-            else:
-                self.stop()
-                self.task_status = 'done'
-
-
+# pull door task
 class PullDoorTask(MoveTask):
     def __init__(self, pos):
         MoveTask.__init__(self,pos)
-        self.vel_pub = rospy.Publisher('cmd_vel', Twist, queue_size=1)
+        self.vslider_pub = rospy.Publisher('mobile_robot/joint_vertical_controller/command', Float64, queue_size=1)
+        self.hslider_pub = rospy.Publisher('mobile_robot/joint_horizontal_controller/command', Float64, queue_size=1)
+        self.hook_pub = rospy.Publisher('mobile_robot/joint_hook_controller/command', Float64, queue_size=1)
+
+    def pull_door(self):
+        if self.task_status == 'ready':
+            self.task_status = 'inprogress'
+            rospy.loginfo("pulling door...")
+            self.vslider_pub.publish(1.0)
+            self.hslider_pub.publish(0.0)
+            self.hook_pub.publish(0.0)
+        elif self.task_status == 'inprogress':
+            # apprach the door
+            # grab the door handle
+            # pull the door
+            # release the hook
+            # rotate the robot using hook to hold the door and open the door
+            self.task_status = 'done'
+            rospy.loginfo("pull door done")
 
     def perform(self):
-        status = self.move_status()
-        if status == 'ready':
-            rospy.loginfo("move to pull door...")
-            self.move()
+        if self.goal_status == 'ready':
+            self.auto_move()
+        if self.goal_status == 'reached':
+            self.pull_door()
 
-        if status == 'reached':
-            self.task_status = 'done'
-
+# disinfection task
 class DisinfectTask(MoveTask):
     def __init__(self, pos):
         MoveTask.__init__(self,pos)
+        self.disinfect_time = rospy.Time.now()
+
+    def disinfect(self):
+        if self.task_status == 'ready':
+            self.task_status = 'inprogress'
+            rospy.loginfo("disinfecting (30 seconds)...")
+            self.disinfect_time = rospy.Time.now()
+        elif self.task_status == 'inprogress':
+            current_time = rospy.Time.now()
+            duration = current_time.secs - self.disinfect_time.secs
+            if duration < 30:
+                self.drive_rotation(1.0)
+            else:
+                self.stop_drive()
+                self.task_status = 'done'
+                rospy.loginfo("disinfection done")
+        else:
+            rospy.loginfo("disinfection done")
 
     def perform(self):
-        status = self.move_status()
-        if status == 'ready':
-            rospy.loginfo("move to disinfect...")
-            rospy.loginfo(self.goal)
-            self.move()
-
-        if status == 'reached':
-            self.task_status = 'done'
+        if self.goal_status == 'ready':
+            self.auto_move()
+        if self.goal_status == 'reached':
+            self.disinfect()
 
 # positions
-def get_charge_pose():
+def task_pose(x,y,yaw):
     pose = Pose()
-    pose.position.x = 8.0
-    pose.position.y = 1.0
+    pose.position.x = x
+    pose.position.y = y
     pose.position.z = 0.0
-    pose.orientation.x = 0
-    pose.orientation.y = 0
-    pose.orientation.z = 0
-    pose.orientation.w = 1
-    return pose
-
-def get_disinfection_pose():
-    pose = Pose()
-    pose.position.x = 5.0
-    pose.position.y = 7.0
-    pose.position.z = 0.0
-    pose.orientation.x = 0
-    pose.orientation.y = 0
-    pose.orientation.z = 0
-    pose.orientation.w = 1
-    return pose
-
-def get_door_push_pose():
-    pose = Pose()
-    pose.position.x = 2.0
-    pose.position.y = 5.5
-    pose.position.z = 0.0
-    pose.orientation.x = 0
-    pose.orientation.y = 0
-    pose.orientation.z = 1
-    pose.orientation.w = 0
-    return pose
-
-def get_door_pull_pose():
-    pose = Pose()
-    pose.position.x = 1.0
-    pose.position.y = 0.7
-    pose.position.z = 0.0
-    pose.orientation.x = 0
-    pose.orientation.y = 0
-    pose.orientation.z = 0
-    pose.orientation.w = 1
+    q = quaternion_from_euler(0,0,yaw)
+    pose.orientation.x = q[0]
+    pose.orientation.y = q[1]
+    pose.orientation.z = q[2]
+    pose.orientation.w = q[3]
     return pose
 
 if __name__ == '__main__':
     rospy.init_node("task_executor", anonymous=True, log_level=rospy.INFO)
     rate = rospy.Rate(10)
-    task1 = ChargeTask(get_charge_pose())
-    task2 = DisinfectTask(get_disinfection_pose())
-    task3 = PushDoorTask(get_door_push_pose())
-    task4 = PullDoorTask(get_door_pull_pose())
+    task1 = ChargeTask(task_pose(7.5,1.0,0.0))
+    task2 = DisinfectTask(task_pose(5.0,5.0,1.57))
+    task3 = PushDoorTask(task_pose(2.5,5.5,3.14))
+    task4 = PullDoorTask(task_pose(-1.0,0.6,0.0))
     try:
         while not rospy.is_shutdown():
             if not task1.is_done():
@@ -215,7 +260,7 @@ if __name__ == '__main__':
                         if not task4.is_done():
                             task4.perform()
                         else:
-                            rospy.logininf("all tasks are performed.")
+                            rospy.loginfo("all tasks are performed.")
         rate.sleep()
     except rospy.ROSInterruptException:
         pass

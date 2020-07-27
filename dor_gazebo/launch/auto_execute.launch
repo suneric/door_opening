@@ -48,7 +48,7 @@
   <include file="$(find dor_control)/launch/path_planner.launch"/>
 
   <!-- perform tasks-->
-  <!-- <include file="$(find dor_control)/launch/perform_tasks.launch"/> -->
+  <include file="$(find dor_control)/launch/perform_tasks.launch"/>
 
   <!--launch rviz-->
   <node name="rviz" pkg="rviz" type="rviz" args="-d $(find dor_gazebo)/rviz.rviz"/>
