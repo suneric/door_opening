@@ -309,7 +309,58 @@
             </box>
           </geometry>
           <material>
-            <diffuse>0.0 1.0 0.0 1</diffuse>
+            <script>
+              <uri>file://media/materials/scripts/Gazebo.material</uri>
+              <name>Gazebo/Yellow</name>
+            </script>
+          </material>
+        </visual>
+      </link>
+      <link name="socket_1">
+        <collision name="socket_1_collision">
+          <pose>9.895 1 0.3 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.01 0.06 0.1</size>
+            </box>
+          </geometry>
+        </collision>
+        <visual name="socket_1_visual">
+          <pose>9.895 1 0.3 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.01 0.06 0.1</size>
+            </box>
+          </geometry>
+          <material>
+            <script>
+              <uri>file://media/materials/scripts/texture.material</uri>
+              <name>dor_gazebo/socket</name>
+            </script>
+          </material>
+        </visual>
+      </link>
+      <link name="socket_2">
+        <collision name="socket_2_collision">
+          <pose>9.895 5 0.3 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.01 0.06 0.1</size>
+            </box>
+          </geometry>
+        </collision>
+        <visual name="socket_2_visual">
+          <pose>9.895 5 0.3 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.01 0.06 0.1</size>
+            </box>
+          </geometry>
+          <material>
+            <script>
+              <uri>file://media/materials/scripts/texture.material</uri>
+              <name>dor_gazebo/socket</name>
+            </script>
           </material>
         </visual>
       </link>

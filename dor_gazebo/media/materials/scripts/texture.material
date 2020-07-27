@@ -1,0 +1,17 @@
+material dor_gazebo/socket
+{
+  technique
+  {
+    pass
+    {
+      ambient 1.0 1.0 1.0 1.0
+      diffuse 1.0 1.0 1.0 1.0
+      specular 1.0 1.0 1.0 1.0 1.0
+      texture_unit
+      {
+        texture ../textures/socket.jpg
+        scale 1 1
+      }
+    }
+  }
+}

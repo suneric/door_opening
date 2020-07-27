@@ -12,11 +12,18 @@
       <xacro:property name="location_z" value="0.55" />
     </xacro:operate_device_macro>
 
-    <xacro:include filename="$(find dor_description)/urdf/camera.urdf.xacro"/>
-    <xacro:camera_macro parent="link_bar">
+    <xacro:include filename="$(find dor_description)/urdf/realsense.urdf.xacro"/>
+    <xacro:realsense_macro parent="link_bar">
       <xacro:property name="location_x" value="0.025" />
       <xacro:property name="location_y" value="0.0" />
       <xacro:property name="location_z" value="0.5" />
+    </xacro:realsense_macro>
+
+    <xacro:include filename="$(find dor_description)/urdf/camera.urdf.xacro"/>
+    <xacro:camera_macro parent="link_finger">
+      <xacro:property name="location_x" value="0.1" />
+      <xacro:property name="location_y" value="0.0" />
+      <xacro:property name="location_z" value="0.01" />
     </xacro:camera_macro>
 
     <xacro:include filename="$(find dor_description)/urdf/laser.urdf.xacro"/>

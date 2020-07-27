@@ -17,7 +17,7 @@ lethal_cost_threshold: 100
 # layers
 inflation:
   cost_scaling_factor: 10.0
-  inflation_radius: 0.4
+  inflation_radius: 0.3
 
 obstacles:
   observation_sources: laser_scan_sensor

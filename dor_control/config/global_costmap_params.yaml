@@ -2,7 +2,7 @@ global_costmap:
   global_frame: "map"
   static_map: true
   rolling_window: false # must be false if static_map is used
-  footprint_padding: 0.02
+  footprint_padding: 0.01
   update_frequency: 5.0
   publish_frequency: 0.0
   plugins:

@@ -50,10 +50,13 @@
   <!--   <doc_depend>doxygen</doc_depend> -->
   <buildtool_depend>catkin</buildtool_depend>
 
+  <exec_depend>gazebo_ros</exec_depend>
 
   <!-- The export tag contains other, unspecified, tags -->
   <export>
     <!-- Other tools can request additional information be placed here -->
-
+    <!--export current folder path to gazebo_ros, makeure gazebo_ros is exec depend -->
+    <!--${prefix} is always path to package.xml itself-->
+    <gazebo_ros gazebo_media_path="${prefix}"/>
   </export>
 </package>

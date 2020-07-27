@@ -7,6 +7,41 @@ from cv_bridge import CvBridge, CvBridgeError
 from sensor_msgs.msg import Image, CameraInfo, PointCloud2
 import sensor_msgs.point_cloud2 as pc2
 
+class FrontCam:
+    def __init__(self):
+        self.bridge=CvBridge()
+        # camera information
+        self.cameraInfoUpdate = False
+        # ros-realsense
+        self.caminfo_sub = rospy.Subscriber('/front_cam/camera_info', CameraInfo, self._caminfo_callback)
+        self.color_sub = rospy.Subscriber('/front_cam/image_raw', Image, self._color_callback)
+        # data
+        self.cv_color = []
+        self.width = 1024
+        self.height = 720
+
+    def ready(self):
+        return self.cameraInfoUpdate and len(self.cv_color) > 0
+
+    def image_size(self):
+        return self.height, self.width
+
+    def color_image(self):
+        return self.cv_color
+
+    def _caminfo_callback(self, data):
+        if self.cameraInfoUpdate == False:
+            self.width = data.width
+            self.height = data.height
+            self.cameraInfoUpdate = True
+
+    def _color_callback(self, data):
+        if self.cameraInfoUpdate:
+            try:
+                self.cv_color = self.bridge.imgmsg_to_cv2(data, "bgr8")
+            except CvBridgeError as e:
+                print(e)
+
 # realsense d435
 class RSD435:
     # create a image view with a frame size for the ROI
