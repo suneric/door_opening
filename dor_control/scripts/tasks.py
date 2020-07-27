@@ -174,8 +174,8 @@ def get_disinfection_pose():
 
 def get_door_push_pose():
     pose = Pose()
-    pose.position.x = 1.5
-    pose.position.y = 5.7
+    pose.position.x = 2.0
+    pose.position.y = 5.5
     pose.position.z = 0.0
     pose.orientation.x = 0
     pose.orientation.y = 0
