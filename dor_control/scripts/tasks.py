@@ -163,7 +163,7 @@ def get_charge_pose():
 
 def get_disinfection_pose():
     pose = Pose()
-    pose.position.x = 1.5
+    pose.position.x = 6.0
     pose.position.y = 6.0
     pose.position.z = 0.0
     pose.orientation.x = 0

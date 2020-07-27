@@ -1,20 +1,23 @@
-obstacle_range: 2.0
+unknown_threshold: 9
+mark_threshold: 0
+obstacle_range: 2.5
 raytrace_range: 3.0
 footprint: [[0.25, 0.25],[-0.25, 0.25],[-0.25, -0.25],[0.25,-0.25]] # counter-closkwise
-# footprint: [[0.2, 0.24],[0.2,-0.24],[-0.2, -0.24],[-0.2, 0.24]] # clockwise
 #robot_radius: ir_of_robot
+footprint_padding: 0.01
 
 robot_base_frame: "link_chassis"
 
 transform_tolerance: 0.2  # second delay
 update_frequency: 5.0
-publish_frequency: 1.0
-resolution: 0.05
+publish_frequency: 2.0
+resolution: 0.02
+lethal_cost_threshold: 100
 
 # layers
 inflation:
-  cost_scaling_factor: 3.0
-  inflation_radius: 0.1
+  cost_scaling_factor: 10.0
+  inflation_radius: 0.4
 
 obstacles:
   observation_sources: laser_scan_sensor

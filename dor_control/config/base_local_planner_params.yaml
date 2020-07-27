@@ -1,9 +1,9 @@
 TrajectoryPlannerROS:
-  acc_lim_x: 1.0
+  acc_lim_x: 2.5
   acc_lim_y: 0.0
-  acc_lim_theta: 1.57
+  acc_lim_theta: 3.2
   max_vel_x: 5.0
-  min_vel_x: 2.5
+  min_vel_x: 2.0
   max_vel_y: 0.0
   min_vel_y: 0.0
   max_vel_theta: 6.28
@@ -14,23 +14,23 @@ TrajectoryPlannerROS:
   dwa: true
   global_frame_id: "odom" # should be same frame as in local costmap's global frame
 
-  sim_time: 1.0
-  sim_granularity: 0.02
-  angular_sim_granularity: 0.02
+  sim_time: 1.0 # sim_time at a low value (< 2.0) will result in limited performance
+  sim_granularity: 0.01
+  angular_sim_granularity: 0.01
   vx_samples: 5
-  vtheta_samples: 10
-  yaw_goal_tolerance: 0.3
-  xy_goal_telorance: 0.3
+  vtheta_samples: 20
+  yaw_goal_tolerance: 0.05
+  xy_goal_telorance: 0.1
   latch_xy_goal_tolerance: false # rotate itself at goal if true
-  oscillation_reset_dist: 0.01
+  oscillation_reset_dist: 0.05
   prune_plan: true
-  controller_frequency: 20.0
+  controller_frequency: 10.0
 
   # trajectory scoring params
   meter_scoring: true # whether the gdist_scal and pdist_scale params should assume that goal_distance and path_distance are expressed in meters or cells, default in cells (false)_
-  occdist_scale: 0.01 # the weighting for how much the controller should atemp to avoid obstacle, default 0.01
-  path_distance_bias: 0.6 # the weighting for how much the controller should stay close to thge path it was give, default 0.6
-  goal_distance_bias: 0.8 # the weighting for how much the controller should attempt to reach its local goal, also control speed, default 0.8
-  heading_lookahead: 0.5 # how far to look ahead in meters when scoring different in place rotation trajectory
+  occdist_scale: 0.02 # the weighting for how much the controller should atemp to avoid obstacle, default 0.01
+  path_distance_bias: 30 # the weighting for how much the controller should stay close to thge path it was give, default 0.6
+  goal_distance_bias: 20 # the weighting for how much the controller should attempt to reach its local goal, also control speed, default 0.8
+  heading_lookahead: 0.325 # how far to look ahead in meters when scoring different in place rotation trajectory
   heading_scoring: true # whether to score based on the robot's heading to the path
   heading_socring_timestep: 0.5 # how far to look ahead in time

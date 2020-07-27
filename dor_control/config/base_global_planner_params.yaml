@@ -1,7 +1,8 @@
 NavfnROS:
   allow_unknown: false
   use_dijkstra: true
-  default_tolerance: 0.1
-  cost_factor: 3.0
-  orientation_mode: 1
+  default_tolerance: 0.02
+  cost_factor: 1.0
+  neutral_cost: 80
+  # orientation_mode: 1
   use_grid_path: false
