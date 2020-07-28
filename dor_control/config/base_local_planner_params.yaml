@@ -20,7 +20,7 @@ TrajectoryPlannerROS:
   vx_samples: 5
   vtheta_samples: 20
   yaw_goal_tolerance: 0.05
-  xy_goal_telorance: 0.1
+  xy_goal_telorance: 0.05
   latch_xy_goal_tolerance: false # rotate itself at goal if true
   oscillation_reset_dist: 0.05
   prune_plan: true

@@ -29,6 +29,10 @@
     <xacro:property name="support_z" value="0.5" />
     <xacro:property name="support_m" value="6" />
 
+    <xacro:property name="hook_l" value="0.25" />
+    <xacro:property name="hook_r" value="0.01" />
+    <xacro:property name="hook_m" value="0.01" />
+
     <!-- main triwheeler link -->
     <xacro:macro name="fourwheeler_base_macro">
       <!-- Used for fixing robot to Gazebo 'base_link'-->
@@ -272,6 +276,71 @@
         </inertial>
       </link>
 
+      <!--hook for opening door-->
+      <joint name="joint_support_hook" type="revolute">
+        <origin xyz="${support_x/2} ${support_y/2} 0" rpy="0 0 0"/>
+        <parent link="link_support"/>
+        <child link="link_hook"/>
+        <axis xyz="0 1 0"/>
+        <limit effort="1000.0" lower="0.0" upper="${0.5*PI}" velocity="0.5"/>
+        <dynamics damping="0" friction="1.0"/>
+      </joint>
+      <link name="link_hook">
+        <visual>
+          <origin xyz="${hook_r} ${hook_r} ${hook_l/2}" rpy="0 0 0" />
+          <geometry>
+            <cylinder length="${hook_l}" radius="${hook_r}"/>
+          </geometry>
+        </visual>
+        <collision>
+          <origin xyz="${hook_r} ${hook_r} ${hook_l/2}" rpy="0 0 0" />
+          <geometry>
+            <cylinder length="${hook_l}" radius="${hook_r}"/>
+          </geometry>
+        </collision>
+        <inertial>
+          <mass value="${hook_m}"/>
+          <origin xyz="${hook_r} ${hook_r} ${hook_l/2}" rpy="0 0 0" />
+          <inertia ixx="${1/3*hook_m*hook_l*hook_l}" ixy="0" ixz="0" iyy="0" iyz="0" izz="${1/3*hook_m*hook_l*hook_l}"/>
+        </inertial>
+      </link>
+      <!-- <joint name="joint_hook_tip" type="fixed">
+        <origin xyz="${hook_r} ${hook_r} ${hook_l}" rpy="0 0 0"/>
+        <parent link="link_hook"/>
+        <child link="link_hooktip"/>
+      </joint>
+      <link name="link_hooktip">
+        <visual>
+          <origin xyz="0 0 0.015" rpy="0 0 0" />
+          <geometry>
+            <box size="0.03 0.03 0.03"/>
+          </geometry>
+        </visual>
+        <collision>
+          <origin xyz="0 0 0.01" rpy="0 0 0" />
+          <geometry>
+            <box size="0.03 0.03 0.03"/>
+          </geometry>
+        </collision>
+        <inertial>
+          <mass value="0.001"/>
+          <origin xyz="0.03 0.03 0.03" rpy="0 0 0" />
+          <inertia ixx="1e-7" ixy="0" ixz="0" iyy="1e-7" iyz="0" izz="1e-7"/>
+        </inertial>
+      </link> -->
+
+
+      <transmission name="hook_trans">
+        <type>transmission_interface/SimpleTransmission</type>
+        <joint name="joint_support_hook">
+          <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+        </joint>
+        <actuator name="hook_motor">
+          <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+          <mechanicalReduction>1</mechanicalReduction>
+        </actuator>
+      </transmission>
+
       <!--Gazebo-->
       <!-- skid steering controller -->
       <gazebo>
@@ -323,6 +392,11 @@
         <mu1>0.1</mu1>
         <mu2>0.1</mu2>
         <material>Gazebo/Black</material>
+      </gazebo>
+
+      <gazebo reference="link_hook">
+        <material>Gazebo/Black</material>
+        <turnGravityOff>true</turnGravityOff>
       </gazebo>
 
     </xacro:macro>

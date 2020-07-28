@@ -16,7 +16,7 @@
     <xacro:realsense_macro parent="link_bar">
       <xacro:property name="location_x" value="0.025" />
       <xacro:property name="location_y" value="0.0" />
-      <xacro:property name="location_z" value="0.5" />
+      <xacro:property name="location_z" value="0.52" />
     </xacro:realsense_macro>
 
     <xacro:include filename="$(find dor_description)/urdf/camera.urdf.xacro"/>

@@ -7,7 +7,7 @@ mobile_robot:
   # Position Controllers
   joint_hook_controller:
     type: effort_controllers/JointPositionController
-    joint: joint_bar_hook
+    joint: joint_support_hook
     pid: {p: 100.0, i: 0.01, d: 10.0}
 
   joint_horizontal_controller:
