@@ -367,7 +367,23 @@
       </gazebo>
 
       <gazebo reference="link_chassis">
-        <material>Gazebo/White</material>
+        <material>Gazebo/Grey</material>
+      </gazebo>
+
+      <gazebo reference="link_support">
+        <material>Gazebo/DarkGrey</material>
+      </gazebo>
+
+      <gazebo reference="link_base">
+        <material>Gazebo/DarkGrey</material>
+      </gazebo>
+
+      <gazebo reference="link_fbumper">
+        <material>Gazebo/DarkGrey</material>
+      </gazebo>
+
+      <gazebo reference="link_rbumper">
+        <material>Gazebo/DarkGrey</material>
       </gazebo>
 
       <gazebo reference="link_lrwheel">

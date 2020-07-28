@@ -1,4 +1,48 @@
 <launch>
-  <!--simulate rgbd camera-->
-  <node pkg="dor_control" type="build_map.py" name="build_room_map" output="screen"/>
+  <arg name="x" default="1.0"/>
+  <arg name="y" default="0.7"/>
+  <arg name="z" default="0.0"/>
+  <arg name="model" default="$(find dor_description)/urdf/mobile_robot.urdf.xacro"/>
+
+  <!-- We resume the logic in empty_world.launch, changing only the name of the world to be launched -->
+  <include file="$(find gazebo_ros)/launch/empty_world.launch">
+    <arg name="world_name" value="$(find dor_gazebo)/worlds/wall_door.world"/>
+    <arg name="paused" value="false"/>
+    <arg name="use_sim_time" value="true"/>
+    <arg name="gui" value="true"/>
+    <arg name="debug" value="false"/>
+    <arg name="headless" default="false"/>
+  </include>
+
+  <!--spawn mobile robot-->
+  <param name="robot_description" command="$(find xacro)/xacro --inorder '$(arg model)'" />
+  <node name="urdf_spawner" pkg="gazebo_ros" type="spawn_model" respawn="false" output="screen"
+        args="-param robot_description
+           -urdf
+           -x $(arg x)
+           -y $(arg y)
+           -z $(arg z)
+           -model mobile_robot" />
+
+  <!--load controller-->
+  <include file="$(find dor_control)/launch/mobile_robot_control.launch"/>
+
+  <!--slam with gmapping laser-->
+  <include file="$(find dor_control)/launch/gmapping_slam.launch"/>
+  <!--amcl-->
+  <include file="$(find dor_control)/launch/amcl_filter.launch">
+    <arg name="x" value="$(arg x)"/>
+    <arg name="y" value="$(arg y)"/>
+    <arg name="z" value="$(arg z)"/>
+    <arg name="use_map" default="true"/>
+    <arg name="first_map" default="false"/>
+  </include>
+  <!--start a map server-->
+  <node pkg="dor_control" type="build_map.py" name="build_map" output="screen"/>
+
+  <!--launch rviz-->
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find dor_gazebo)/rviz.rviz"/>
+
+  <!--command: rosrun map_server map_saver -f /path/my_map-->
+
 </launch>

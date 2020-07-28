@@ -240,6 +240,8 @@ class PullDoorTask(MoveTask):
         rospy.sleep(12)
         self.hook_pub.publish(0.0)
         self.hslider_pub.publish(0.0)
+        self.drive_rotation(2.0)
+        rospy.sleep(5)
         self.stop_drive()
 
     def pull_door(self):
@@ -276,32 +278,32 @@ def task_pose(x,y,yaw):
     pose.orientation.w = q[3]
     return pose
 
+def perform_tasks(task1,task2,task3,task4):
+    if not task1.is_done():
+        task1.perform()
+    else:
+        if not task2.is_done():
+            task2.perform()
+        else:
+            if not task3.is_done():
+                task3.perform()
+            else:
+                if not task4.is_done():
+                    task4.perform()
+                else:
+                    rospy.loginfo("all tasks are performed.")
+
 if __name__ == '__main__':
     rospy.init_node("task_executor", anonymous=True, log_level=rospy.INFO)
     rate = rospy.Rate(10)
-    task1 = ChargeTask(task_pose(7.5,1.0,0.0))
-    task2 = DisinfectTask(task_pose(5.0,5.0,1.57))
-    task3 = PushDoorTask(task_pose(2.5,5.5,3.14))
-    task4 = PullDoorTask(task_pose(-1.0,0.8,0.0))
+    task1 = PullDoorTask(task_pose(-1.0,0.8,0.0))
+    task2 = ChargeTask(task_pose(7.5,1.0,0.0))
+    task3 = DisinfectTask(task_pose(5.0,5.0,1.57))
+    task4 = PushDoorTask(task_pose(1.5,5.5,3.14))
+
     try:
         while not rospy.is_shutdown():
-            if not task4.is_done():
-                task4.perform()
-            else:
-                rospy.loginfo("done")
-            # if not task1.is_done():
-            #     task1.perform()
-            # else:
-            #     if not task2.is_done():
-            #         task2.perform()
-            #     else:
-            #         if not task3.is_done():
-            #             task3.perform()
-            #         else:
-            #             if not task4.is_done():
-            #                 task4.perform()
-            #             else:
-            #                 rospy.loginfo("all tasks are performed.")
+            perform_tasks(task1,task2,task3,task4)
         rate.sleep()
     except rospy.ROSInterruptException:
         pass

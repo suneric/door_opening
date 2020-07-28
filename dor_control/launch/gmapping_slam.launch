@@ -4,7 +4,7 @@
     <remap from="scan" to="laser/scan" />
     <remap from="odom" to="odom" />
     <param name ="base_frame" value="link_chassis" />
-    <param name="map_update_interval" value="5.0"/>
+    <param name="map_update_interval" value="1.0"/>
     <param name="maxRange" value="20.0"/>
     <param name="maxUrange" value="80.0"/>
     <param name="sigma" value="0.05"/>

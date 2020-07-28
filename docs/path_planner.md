@@ -1,12 +1,23 @@
 # Path Planning with 2D Laser scanner
 ## Build a Map
-the map can be built with ROS slam gmapping package with 2D laser scan.
+A map can be built with ROS slam gmapping package with 2D laser scan.
+```
+roslaunch dor_control build_room_map.launch
+```
+After the auto map build is complete, save the map with
+```
+rosrun map_server map_saver -f [/path/mymap.yaml]
+```
 
 ## Localization
 the localization can be achieved by using ROS amcl package.
 
-## Path planning
-the path planning can be done by using ROS move_base along with global planner and local planner.
+## Path planning on an exisiting map
+The path planning can be done by using ROS move_base along with global planner and local planner.
+```
+roslaunch dor_gazebo execute_tasks.launch
+```
+
 
 ## References
 - [ROS slam gmapping](http://wiki.ros.org/gmapping)

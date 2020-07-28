@@ -1,4 +1,4 @@
 <launch>
   <!--simulate rgbd camera-->
-  <node pkg="dor_control" type="tasks.py" name="task_executor" output="screen"/>
+  <node pkg="dor_control" type="execute_tasks.py" name="task_executor" output="screen"/>
 </launch>

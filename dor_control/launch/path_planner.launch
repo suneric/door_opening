@@ -1,7 +1,23 @@
 <launch>
+  <arg name="x" default="-1.0"/>
+  <arg name="y" default="0.7"/>
+  <arg name="z" default="0.0"/>
+  <arg name="map_file" default="$(find dor_control)/map/room1.yaml"/>
   <!--use amcl to localize robot-->
-  <include file="$(find dor_control)/launch/amcl_filter.launch"/>
+  <include file="$(find dor_control)/launch/amcl_filter.launch">
+    <arg name="x" value="$(arg x)"/>
+    <arg name="y" value="$(arg y)"/>
+    <arg name="z" value="$(arg z)"/>
+    <arg name="use_map" default="false"/>
+    <arg name="first_map" default="true"/>
+  </include>
 
+  <!--load existing map-->
+  <node pkg="map_server" type="map_server" name="map_server" args="$(arg map_file)">
+    <param name="frame_id" value="map"/>
+  </node>
+
+  <!--move base-->
   <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
     <rosparam file="$(find dor_control)/config/costmap_common_params.yaml" command="load" ns="global_costmap" />
     <rosparam file="$(find dor_control)/config/costmap_common_params.yaml" command="load" ns="local_costmap" />

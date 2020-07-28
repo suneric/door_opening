@@ -1,5 +1,3 @@
-unknown_threshold: 9
-mark_threshold: 0
 obstacle_range: 2.5
 raytrace_range: 3.0
 footprint: [[0.25, 0.25],[-0.25, 0.25],[-0.25, -0.25],[0.25,-0.25]] # counter-closkwise
@@ -8,7 +6,7 @@ footprint_padding: 0.01
 
 robot_base_frame: "link_chassis"
 
-transform_tolerance: 0.2  # second delay
+transform_tolerance: 0.1  # second delay
 update_frequency: 5.0
 publish_frequency: 2.0
 resolution: 0.02

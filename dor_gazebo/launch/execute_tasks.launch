@@ -3,8 +3,6 @@
   <arg name="x" default="-1.0"/>
   <arg name="y" default="0.7"/>
   <arg name="z" default="0.0"/>
-  <arg name="map" default="$(find dor_control)/map/room.yaml"/>
-  <arg name="map_exist" value="$(eval arg('map') != '')"/>
 
   <!-- We resume the logic in empty_world.launch, changing only the name of the world to be launched -->
   <include file="$(find gazebo_ros)/launch/empty_world.launch">
@@ -26,26 +24,18 @@
            -z $(arg z)
            -model mobile_robot" />
 
-  <!--load controller-->
+  <!--robot controller-->
   <include file="$(find dor_control)/launch/mobile_robot_control.launch"/>
 
-  <!--inlcude camera-->
-  <include file="$(find dor_control)/launch/door_handle_detection.launch"/>
-
-  <!--map-->
-  <group if="$(arg map_exist)">
-    <include file="$(find dor_control)/launch/load_room_map.launch">
-      <arg name="map_file" value="$(arg map)"/>
-    </include>
-  </group>
-  <group unless="$(arg map_exist)">
-    <!--slam with gmapping laser-->
-    <include file="$(find dor_control)/launch/gmapping_slam.launch"/>
-    <include file="$(find dor_control)/launch/build_room_map.launch"/>
-  </group>
+  <!--object detection-->
+  <include file="$(find dor_control)/launch/object_detection.launch"/>
 
   <!--path planning with move base-->
-  <include file="$(find dor_control)/launch/path_planner.launch"/>
+  <include file="$(find dor_control)/launch/path_planner.launch">
+    <arg name="x" value="$(arg x)"/>
+    <arg name="y" value="$(arg y)"/>
+    <arg name="z" value="$(arg z)"/>
+  </include>
 
   <!-- perform tasks-->
   <include file="$(find dor_control)/launch/perform_tasks.launch"/>
