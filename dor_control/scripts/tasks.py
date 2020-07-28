@@ -23,7 +23,7 @@ class MoveTask:
         self.last_time = rospy.Time.now()
 
     def is_done(self):
-        if self.task_status == 'done' or self.task_status == 'ready':
+        if self.task_status == 'done':
             return True
         else:
             return False
@@ -203,8 +203,6 @@ class PullDoorTask(MoveTask):
         self.vslider_pub = rospy.Publisher('mobile_robot/joint_vertical_controller/command', Float64, queue_size=1)
         self.hslider_pub = rospy.Publisher('mobile_robot/joint_horizontal_controller/command', Float64, queue_size=1)
         self.hook_pub = rospy.Publisher('mobile_robot/joint_hook_controller/command', Float64, queue_size=1)
-        self.task_status = 'inprogress'
-        self.goal_status = 'reached'
 
     def open_door_1(self):
         self.stop_drive()
@@ -243,31 +241,21 @@ class PullDoorTask(MoveTask):
         self.hook_pub.publish(0.0)
         self.hslider_pub.publish(0.0)
         self.stop_drive()
-        self.task_status = 'done'
 
     def pull_door(self):
         if self.task_status == 'ready':
             self.task_status = 'inprogress'
             rospy.loginfo("pulling door...")
         elif self.task_status == 'inprogress':
-            # apprach the door
             self.vslider_pub.publish(1.0)
             self.hslider_pub.publish(0.0)
-            # print(self.amcl_pose)
             if self.amcl_pose.x < -0.45:
                 self.drive_forward(0.5)
-            # elif self.amcl_pose.x > 2.0:
-            #     self.stop_drive()
-            #     self.task_status = 'done'
-            #     rospy.loginfo("pull door done")
             else:
                 self.open_door_1()
                 self.open_door_2()
-
-            # grab the door handle
-            # pull the door
-            # release the hook
-            # rotate the robot using hook to hold the door and open the door
+                self.task_status = 'done'
+                rospy.loginfo("pull door done")
 
     def perform(self):
         if self.goal_status == 'ready':
