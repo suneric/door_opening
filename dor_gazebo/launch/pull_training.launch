@@ -1,8 +1,13 @@
 <launch>
   <arg name="model" default="$(find dor_description)/urdf/training_mobile_robot.urdf.xacro"/>
-  <arg name="x" default="-0.5"/>
-  <arg name="y" default="0.7"/>
-  <arg name="z" default="0.0"/>
+  <arg name="x" default="0.61"/>
+  <arg name="y" default="0.77"/>
+  <arg name="z" default="0.075"/>
+  <arg name="roll" default="0"/>
+  <arg name="pitch" default="0"/>
+  <arg name="yaw" default="3.3"/>
+
+
 
   <!-- We resume the logic in empty_world.launch, changing only the name of the world to be launched -->
   <include file="$(find gazebo_ros)/launch/empty_world.launch">
@@ -22,6 +27,9 @@
            -x $(arg x)
            -y $(arg y)
            -z $(arg z)
+           -R $(arg roll)
+           -P $(arg pitch)
+           -Y $(arg yaw)
            -model mobile_robot" />
 
   <include file="$(find dor_trainer)/launch/camera.launch"/>
