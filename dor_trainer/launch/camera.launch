@@ -1,0 +1,3 @@
+<launch>
+  <node pkg="dor_trainer" type="camera.py" name="door_opening" output="screen"/>
+</launch>

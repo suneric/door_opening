@@ -1,12 +1,12 @@
 <launch>
-  <arg name="model" default="$(find dor_description)/urdf/mobile_robot.urdf.xacro"/>
-  <arg name="x" default="-1.0"/>
+  <arg name="model" default="$(find dor_description)/urdf/training_mobile_robot.urdf.xacro"/>
+  <arg name="x" default="-0.5"/>
   <arg name="y" default="0.7"/>
   <arg name="z" default="0.0"/>
 
   <!-- We resume the logic in empty_world.launch, changing only the name of the world to be launched -->
   <include file="$(find gazebo_ros)/launch/empty_world.launch">
-    <arg name="world_name" value="$(find dor_gazebo)/worlds/wall_door.world"/>
+    <arg name="world_name" value="$(find dor_gazebo)/worlds/pull_door.world"/>
     <arg name="paused" value="false"/>
     <arg name="use_sim_time" value="true"/>
     <arg name="gui" value="true"/>
@@ -24,23 +24,6 @@
            -z $(arg z)
            -model mobile_robot" />
 
-  <!--robot controller-->
-  <include file="$(find dor_control)/launch/device_control.launch"/>
-
-  <!--object detection-->
-  <include file="$(find dor_control)/launch/object_detection.launch"/>
-
-  <!--path planning with move base-->
-  <include file="$(find dor_control)/launch/path_planner.launch">
-    <arg name="x" value="$(arg x)"/>
-    <arg name="y" value="$(arg y)"/>
-    <arg name="z" value="$(arg z)"/>
-  </include>
-
-  <!-- perform tasks-->
-  <include file="$(find dor_control)/launch/perform_tasks.launch"/>
-
-  <!--launch rviz-->
-  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find dor_gazebo)/rviz.rviz"/>
+  <include file="$(find dor_trainer)/launch/camera.launch"/>
 
 </launch>

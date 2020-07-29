@@ -4,13 +4,18 @@
     <xacro:property name="location_x" value="0" />
     <xacro:property name="location_y" value="0" />
     <xacro:property name="location_z" value="0" />
+    <xacro:property name="location_r" value="0" />
+    <xacro:property name="location_p" value="0" />
+    <xacro:property name="location_y" value="0" />
+    <xacro:property name="camera_width" value="800" />
+    <xacro:property name="camera_height" value="800" />
 
     <xacro:property name="camera_link" value="0.02" />
 
     <xacro:macro name="camera_macro" params="parent">
     <!--movable camera-->
     <joint name="camera_joint" type="fixed">
-      <origin xyz="${location_x} ${location_y} ${location_z}" rpy="0 0 0"/>
+      <origin xyz="${location_x} ${location_y} ${location_z}" rpy="${location_r} ${location_p} ${location_y}"/>
       <parent link="${parent}"/>
       <child link="camera_link"/>
     </joint>
@@ -41,8 +46,8 @@
         <camera name="head">
           <horizontal_fov>1.3962634</horizontal_fov>
           <image>
-            <width>800</width>
-            <height>800</height>
+            <width>${camera_width}</width>
+            <height>${camera_height}</height>
             <format>R8G8B8</format>
           </image>
           <clip>

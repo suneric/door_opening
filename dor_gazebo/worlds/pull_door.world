@@ -1,0 +1,297 @@
+<sdf version='1.6'>
+  <world name='default'>
+    <include>
+      <uri>model://ground_plane</uri>
+    </include>
+    <include>
+      <uri>model://sun</uri>
+    </include>
+    <model name="hinged_door">
+      <link name="frame">
+        <pose>0.06 -0.0005 0 0 0 0</pose>
+        <collision name="collision_1">
+          <pose>-0.025145 -0.03429 1.0541 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.05029 0.06858 2.10820</size>
+            </box>
+          </geometry>
+        </collision>
+        <collision name="collision_2">
+          <pose>-0.025145 0.95631 1.0541 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.05029 0.06858 2.10820</size>
+            </box>
+          </geometry>
+        </collision>
+        <collision name="collision_3">
+          <pose>-0.0251450 0.46482 2.07137 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.05029 0.92964 0.07366</size>
+            </box>
+          </geometry>
+        </collision>
+        <visual name="visual">
+          <pose>0 -0.06858 0 0 0 0</pose>
+          <geometry>
+            <mesh>
+              <uri>model://hinged_door/meshes/frame.dae</uri>
+            </mesh>
+          </geometry>
+        </visual>
+      </link>
+      <link name="door">
+        <pose>-0.0 0.000 2.040 3.14159 0 1.57</pose>
+        <inertial>
+          <mass>41.3256</mass>
+          <pose>0.4569 0.0349 1.016 0 0 0</pose>
+          <inertia>
+            <ixx>14.2053</ixx>
+            <ixy>0.0004</ixy>
+            <ixz>0.0000</ixz>
+            <iyy>17.1997</iyy>
+            <iyz>0.0000</iyz>
+            <izz>3.0298</izz>
+          </inertia>
+        </inertial>
+        <collision name="collision">
+          <pose>0.4569 0.0349 1.016 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.9144 0.04445 2.032</size>
+            </box>
+          </geometry>
+        </collision>
+        <visual name="visual">
+          <pose>0 -0.06858 0 0 0 0</pose>
+          <geometry>
+            <mesh>
+              <uri>model://hinged_door/meshes/door.dae</uri>
+            </mesh>
+          </geometry>
+          <material>
+          <script>
+            <uri>file://media/materials/scripts/Gazebo.material</uri>
+            <name>Gazebo/Yellow</name>
+          </script>
+          </material>
+        </visual>
+      </link>
+      <link name="handles">
+        <pose>0.0 0.8 1.05 0 3.14 1.57</pose>
+        <collision name="handle1_collision">
+          <pose>0.015 -0.015 0 -1.57 0 0</pose>
+          <geometry>
+            <mesh>
+              <uri>model://door_handle/meshes/handle.dae</uri>
+            </mesh>
+          </geometry>
+        </collision>
+        <visual name="handle1_visual">
+          <pose>0.015 -0.015 0 -1.57 0 0</pose>
+          <geometry>
+            <mesh>
+              <uri>model://door_handle/meshes/handle.dae</uri>
+            </mesh>
+          </geometry>
+        </visual>
+        <collision name="handle2_collision">
+          <pose>0.015 -0.055 0 1.57 0 0</pose>
+          <geometry>
+            <mesh>
+              <uri>model://door_handle/meshes/handle.dae</uri>
+            </mesh>
+          </geometry>
+        </collision>
+        <visual name="handle2_visual">
+          <pose>0.015 -0.055 0 1.57 0 0</pose>
+          <geometry>
+            <mesh>
+              <uri>model://door_handle/meshes/handle.dae</uri>
+            </mesh>
+          </geometry>
+        </visual>
+      </link>
+      <joint name="handle" type="revolute">
+        <parent>door</parent>
+        <child>handles</child>
+        <pose>0.015 0 0 0 0 0</pose>
+        <axis>
+          <xyz>1 0 0</xyz>
+          <limit>
+            <lower>0</lower>
+            <upper>1.58</upper>
+          </limit>
+          <dynamics>
+            <damping>0</damping>
+            <friction>5.0</friction>
+          </dynamics>
+          <use_parent_model_frame>true</use_parent_model_frame>
+        </axis>
+      </joint>
+      <joint name="hinge" type="revolute">
+        <parent>frame</parent>
+        <child>door</child>
+        <axis>
+          <xyz>0 0 1</xyz>
+          <limit>
+            <lower>0</lower>
+            <upper>1.58</upper>
+          </limit>
+          <dynamics>
+            <damping>0.0</damping>
+            <friction>10.0</friction>
+          </dynamics>
+          <use_parent_model_frame>true</use_parent_model_frame>
+        </axis>
+      </joint>
+      <joint name="world_joint" type="fixed">
+        <child>frame</child>
+        <parent>world</parent>
+        <axis>
+          <limit>
+            <lower>0</lower>
+            <upper>0</upper>
+          </limit>
+          <xyz>0 1 0</xyz>
+          <dynamics>
+            <damping>0</damping>
+          </dynamics>
+          <use_parent_model_frame>true</use_parent_model_frame>
+        </axis>
+      </joint>
+    </model>
+    <model name="walls">
+      <static>true</static>
+      <link name="wall_1">
+        <collision name="wall_1_collision">
+          <pose>0.03 1.49911 1.05342 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.1 1.00178 2.10684</size>
+            </box>
+          </geometry>
+        </collision>
+        <visual name="wall_1_visual">
+          <pose>0.03 1.49911 1.05342 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.1 1.00178 2.10684</size>
+            </box>
+          </geometry>
+          <material>
+            <script>
+              <uri>file://media/materials/scripts/Gazebo.material</uri>
+              <name>Gazebo/White</name>
+            </script>
+          </material>
+        </visual>
+      </link>
+      <link name="wall_2">
+        <collision name="wall_2_collision">
+          <pose>0.03 -0.53429 1.05342 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.1 0.93142 2.10684</size>
+            </box>
+          </geometry>
+        </collision>
+        <visual name="wall_2_visual">
+          <pose>0.03 -0.53429 1.05342 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.1 0.93142 2.10684</size>
+            </box>
+          </geometry>
+          <material>
+            <script>
+              <uri>file://media/materials/scripts/Gazebo.material</uri>
+              <name>Gazebo/White</name>
+            </script>
+          </material>
+        </visual>
+      </link>
+      <link name="wall_3">
+        <collision name="wall_3_collision">
+          <pose>-1.0 2 1.05342 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>2 0.1 2.10684</size>
+            </box>
+          </geometry>
+        </collision>
+        <visual name="wall_3_visual">
+          <pose>-1.0 2 1.05342 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>2 0.1 2.10684</size>
+            </box>
+          </geometry>
+          <material>
+            <script>
+              <uri>file://media/materials/scripts/Gazebo.material</uri>
+              <name>Gazebo/White</name>
+            </script>
+          </material>
+        </visual>
+      </link>
+      <link name="wall_4">
+        <collision name="wall_4_collision">
+          <pose>-1.0 -1.0 1.05342 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>2.0 0.1 2.10684</size>
+            </box>
+          </geometry>
+        </collision>
+        <visual name="wall_4_visual">
+          <pose>-1.0 -1.0 1.05342 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>2.0 0.1 2.10684</size>
+            </box>
+          </geometry>
+          <material>
+            <script>
+              <uri>file://media/materials/scripts/Gazebo.material</uri>
+              <name>Gazebo/White</name>
+            </script>
+          </material>
+        </visual>
+      </link>
+      <link name="wall_5">
+        <collision name="wall_5_collision">
+          <pose>-2.0 0.5 1.05342 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.1 3 2.10684</size>
+            </box>
+          </geometry>
+        </collision>
+        <visual name="wall_5_visual">
+          <pose>-2.0 0.5 1.05342 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.1 3 2.10684</size>
+            </box>
+          </geometry>
+          <material>
+            <script>
+              <uri>file://media/materials/scripts/Gazebo.material</uri>
+              <name>Gazebo/White</name>
+            </script>
+          </material>
+        </visual>
+      </link>
+    </model>
+    <gui fullscreen='0'>
+      <camera name='user_camera'>
+        <pose frame=''>-0.550585 2.07567 4.6646 0 1.24765 -1.35182</pose>
+        <view_controller>orbit</view_controller>
+        <projection_type>perspective</projection_type>
+      </camera>
+    </gui>
+  </world>
+</sdf>

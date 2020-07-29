@@ -1,6 +1,6 @@
 <launch>
   <!--load joint controller configuration from yaml file to parameter server-->
-  <rosparam file="$(find dor_control)/config/mobile_robot.yaml" command="load"/>
+  <rosparam file="$(find dor_control)/config/device_control.yaml" command="load"/>
 
   <node name="controller_spawner" pkg="controller_manager" type="spawner" respawn="false"
     output="screen" ns="/mobile_robot" args="joint_hook_controller joint_horizontal_controller joint_vertical_controller joint_state_controller"/>
