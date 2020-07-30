@@ -7,8 +7,8 @@
     <xacro:property name="location_r" value="0" />
     <xacro:property name="location_p" value="0" />
     <xacro:property name="location_y" value="0" />
-    <xacro:property name="camera_width" value="800" />
-    <xacro:property name="camera_height" value="800" />
+    <xacro:property name="camera_width" value="600" />
+    <xacro:property name="camera_height" value="600" />
 
     <xacro:property name="camera_link" value="0.02" />
 

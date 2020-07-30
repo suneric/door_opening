@@ -1,6 +1,6 @@
-# mobile robot for door opening
+# Mobile robot for door opening
 
-## mechanical design
+## Mechanical design
 - total mass: 40 kg
 - dimensions:
   - mobile base (length x width x height): 42 cm x 40 cm x 10 cm (30 kg)
@@ -8,7 +8,7 @@
   - platform (length x width x height): 50 cm x 50 cm x 50 cm (6 kg)
   - bumper (length x width x height): 4 cm x 50 cm x 12.5 cm (1 kg x 2)
 
-## device design
+## Device design
 - base bar (length x width x height): 2 cm x 20 cm x 100 cm
 - vertical slider (length x width x height): 2 cm x 50 cm x 5 cm
 - horizontal slider (length x width x height): 2 cm x 5 cm x 5 cm
@@ -16,4 +16,4 @@
 - finger tip (length x width x height): 1 cm x 2 cm x 6 cm
 the length from tip to center of mobile base (in x axis) is 42 cm
 
-## controller
+## Controller
