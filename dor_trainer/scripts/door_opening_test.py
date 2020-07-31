@@ -23,8 +23,8 @@ for episode in range(10):
   state, info = env.reset()
   done = False
   for step in range(128):
-    action = env.action_space.sample()
-    next_state, reward, done, info = env.step(action)
+    action_idx = np.random.randint(9)
+    next_state, reward, done, info = env.step(action_idx)
     print("Episode : {}, Step: {}, \n current pose.x: {},, Reward: {:.4f}".format(
       episode,
       step,

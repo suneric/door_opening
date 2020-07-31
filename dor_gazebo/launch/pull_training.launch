@@ -1,6 +1,6 @@
 <launch>
   <arg name="model" default="$(find dor_description)/urdf/training_mobile_robot.urdf.xacro"/>
-  <arg name="x" default="0.61"/>
+  <arg name="x" default="1.61"/>
   <arg name="y" default="0.77"/>
   <arg name="z" default="0.075"/>
   <arg name="roll" default="0"/>
@@ -32,6 +32,6 @@
            -Y $(arg yaw)
            -model mobile_robot" />
 
-  <include file="$(find dor_trainer)/launch/camera.launch"/>
+  <!-- <include file="$(find dor_trainer)/launch/camera.launch"/> -->
 
 </launch>
