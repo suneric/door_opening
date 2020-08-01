@@ -11,13 +11,14 @@ logging.basicConfig(format='%(asctime)s %(message)s',level=logging.INFO)
 from agents.dqn_conv import DQNAgent
 from envs.door_open_task_env import DoorOpenTaskEnv
 import rospy
+import tensorflow as tf
 
 if __name__=='__main__':
     rospy.init_node('dqn_train', anonymous=True, log_level=rospy.INFO)
     # instantiate env
     env = DoorOpenTaskEnv(resolution=(64,64))
     # parameter
-    num_episodes = 5000
+    num_episodes = 10000
     num_steps = env.max_episode_steps
     train_freq = 80
     # variables
@@ -29,6 +30,11 @@ if __name__=='__main__':
     # instantiate agent
     agent_p = DQNAgent(name='dqn_door_open')
     model_path = os.path.join(sys.path[0], 'saved_models', agent_p.name, 'models')
+
+    # use tensorboard
+    summary_writer = tf.summary.create_file_writer(model_path)
+    summary_writer.set_as_default()
+
     start_time = time.time()
     for ep in range(num_episodes):
         obs, info = env.reset()
@@ -60,6 +66,8 @@ if __name__=='__main__':
         if env.out:
             success_counter += 1
 
+        tf.summary.scalar("episode total reward", ep_rew, step=ep)
+
         rospy.loginfo(
             "\n================\nEpisode: {} \nEpsilon: {} \nEpisodeLength: {} \nEpisodeTotalRewards: {} \nAveragedTotalReward: {} \nSuccess: {} \nTime: {} \n================\n".format(
                 ep+1,
@@ -71,6 +79,7 @@ if __name__=='__main__':
                 time.time()-start_time
             )
         )
+
 
     # plot averaged returns
     fig, ax = plt.subplots(figsize=(8, 6))

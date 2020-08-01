@@ -89,10 +89,10 @@ class DQNAgent:
     def __init__(self,
         name='dqn_agent',
         dim_img=(64,64,1),
-        dim_act=9,
+        dim_act=8,
         buffer_size=int(1e4),
         decay_period=1000,
-        warmup_episodes=200,
+        warmup_episodes=3000,
         init_epsilon=1.,
         final_epsilon=.1,
         learning_rate=1e-3,
@@ -176,7 +176,7 @@ class DQNAgent:
 if __name__=='__main__':
     agent = DQNAgent(name='test_dqn_agent',
         dim_img=(64,64,1),
-        dim_act=9,
+        dim_act=8,
         buffer_size=10)
     test_img = np.random.rand(8,64,64,1)
     qvals = agent.dqn_active(test_img)

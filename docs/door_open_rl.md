@@ -11,7 +11,10 @@ if pip unable to recognize the version, upgrade pip with
 ```
 pip install pip --upgrade
 ```
-
+- view learning data in tensorboard
+```
+python -m tensorboard.main --logdir=/path/model
+```
 
 install gym
 ```
