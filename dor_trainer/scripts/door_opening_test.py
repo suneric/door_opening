@@ -29,7 +29,7 @@ def random_test(episode):
         state, info = env.reset()
         done = False
         for step in range(steps):
-            action_idx = np.random.randint(9)
+            action_idx = np.random.randint(5)
             next_state, reward, done, info = env.step(action_idx)
             print("Episode : {}, Step: {}, \n current pose.x: {},, Reward: {:.4f}".format(
                 episode,
@@ -42,7 +42,7 @@ def random_test(episode):
 
 def dqn_test(episode):
     env = DoorOpenTaskEnv(resolution=(64,64))
-    agent = DQNAgent(name='dqn_door_open')
+    agent = DQNAgent(name='dqn_door_open',dim_img=(64,64,1),dim_act=3)
     model_path = os.path.join(sys.path[0], 'saved_models', agent.name, 'models')
     agent.dqn_active = tf.keras.models.load_model(model_path)
 

@@ -18,7 +18,7 @@ if __name__=='__main__':
     # instantiate env
     env = DoorOpenTaskEnv(resolution=(64,64))
     # parameter
-    num_episodes = 10000
+    num_episodes = 5000
     num_steps = env.max_episode_steps
     train_freq = 80
     # variables
@@ -28,7 +28,7 @@ if __name__=='__main__':
     sedimentary_returns = []
     ep_rew = 0
     # instantiate agent
-    agent_p = DQNAgent(name='dqn_door_open')
+    agent_p = DQNAgent(name='dqn_door_open',dim_img=(64,64,1),dim_act=5)
     model_path = os.path.join(sys.path[0], 'saved_models', agent_p.name, 'models')
 
     # use tensorboard

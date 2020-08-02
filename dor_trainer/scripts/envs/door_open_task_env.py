@@ -7,7 +7,7 @@ import rospy
 from .gym_gazebo_env import GymGazeboEnv
 from gym.envs.registration import register
 from std_msgs.msg import Float64
-from gazebo_msgs.msg import LinkStates, ModelStates, ModelState
+from gazebo_msgs.msg import LinkStates, ModelStates, ModelState, LinkState
 from std_msgs.msg import Float32MultiArray
 from geometry_msgs.msg import Pose, Twist
 from sensor_msgs.msg import Image
@@ -39,13 +39,16 @@ class DoorOpenTaskEnv(GymGazeboEnv):
     self.resolution = resolution
     self.max_episode_steps = 200
     self.info = {}
-    self.action_space = 2.0*np.array([[-2.5,-3.14],[-2.5,0.0],[-2.5,3.14],[0.0,-3.14],[0.0,3.14],[2.5,-3.14],[2.5,0.0],[2.5,3.14]]) # x and yaw velocities
+    self.action_space = 2*np.array([[1.5,3.14],[1.5,0.0],[0.0,3.14],[-1.5,3.14],[-1.5,0.0]]) # x and yaw velocities
     self._check_all_sensors_ready()
-    self.vel_pub = rospy.Publisher('cmd_vel', Twist, queue_size=1)
-    self.model_state_pub = rospy.Publisher('/gazebo/set_model_state', ModelState, queue_size=1)
-    self.robot_pos_sub = rospy.Subscriber('/gazebo/model_states', ModelStates, self._robot_pose_cb)
     self.image_sub = rospy.Subscriber('/front_cam/image_raw', Image, self._image_cb)
-    self.door_sub = rospy.Subscriber('/gazebo/link_states', LinkStates, self._door_pose_cb)
+    self.vel_pub = rospy.Publisher('cmd_vel', Twist, queue_size=1)
+
+    self.robot_pose_pub = rospy.Publisher('/gazebo/set_model_state', ModelState, queue_size=1)
+    # self.door_pose_pub = rospy.Publisher('/gazebo/set_link_state', LinkState, queue_size=1)
+    self.door_pose_sub = rospy.Subscriber('/gazebo/link_states', LinkStates, self._door_pose_cb)
+    self.robot_pos_sub = rospy.Subscriber('/gazebo/model_states', ModelStates, self._robot_pose_cb)
+
     self._check_publisher_connection()
     self.step_cnt = 0
 
@@ -74,18 +77,25 @@ class DoorOpenTaskEnv(GymGazeboEnv):
     """Sets the Robot in its init pose
     """
     self.out = False
+    self.step_cnt = 0
+
+    # wait the door closed
+    door_edge_pose = self._door_edge_position(0.9144,0)
+    while door_edge_pose[0,3] > 0.15:
+        door_edge_pose = self._door_edge_position(0.9144,0)
+        rospy.sleep(1)
+
     robot = ModelState()
     robot.model_name = 'mobile_robot'
     robot.pose.position.x = 0.61
     robot.pose.position.y = 0.77
     robot.pose.position.z =0.075
-    q = quaternion_from_euler(0,0,3.3)
-    robot.pose.orientation.x = q[0]
-    robot.pose.orientation.y = q[1]
-    robot.pose.orientation.z = q[2]
-    robot.pose.orientation.w = q[3]
-    self.model_state_pub.publish(robot)
-    self.step_cnt = 0
+    rq = quaternion_from_euler(0,0,3.3)
+    robot.pose.orientation.x = rq[0]
+    robot.pose.orientation.y = rq[1]
+    robot.pose.orientation.z = rq[2]
+    robot.pose.orientation.w = rq[3]
+    self.robot_pose_pub.publish(robot)
 
   def _check_all_systems_ready(self):
     """
@@ -169,7 +179,7 @@ class DoorOpenTaskEnv(GymGazeboEnv):
     msg.angular.y = 0
     msg.angular.z = action[1]
     self.vel_pub.publish(msg)
-    rospy.sleep(0.1)
+    rospy.sleep(0.5)
     self.step_cnt += 1
 
   def _is_done(self):
@@ -190,21 +200,20 @@ class DoorOpenTaskEnv(GymGazeboEnv):
     if self._robot_is_out():
         out_reward = 100
 
-    # the distance between hook tips and the door edge
-    hook_pose = self._robot_footprint_position(0.5,-0.25)
-    hook_x, hook_y = hook_pose[0,3], hook_pose[1,3]
+    # the distance between robot and the door edge
     door_pose = self._door_edge_position(0.9144,0)
-    door_x, door_y = door_pose[0,3], door_pose[1,3]
-    pose_penalty = 10*math.sqrt((hook_x-door_x)*(hook_x-door_x)+(hook_y-door_y)*(hook_y-door_y))
+    door_x = door_pose[0,3]
+    robot_x = self.robot_pose.position.x
+    pose_penalty = 0.1*(robot_x-door_x)
 
     # failure penalty
     failed_penalty = 0
     if self._door_open_failed():
-        failed_penalty = 50*(self.max_episode_steps-self.step_cnt)/self.max_episode_steps
+        failed_penalty = 10*(self.max_episode_steps-self.step_cnt)/self.max_episode_steps
 
     # try to achieve less steps
-    step_penalty = 0.1
-    
+    step_penalty = 0.01
+
     return out_reward-pose_penalty-failed_penalty-step_penalty
 
 
@@ -216,12 +225,12 @@ class DoorOpenTaskEnv(GymGazeboEnv):
       if not self._robot_is_out():
           x = cam_pose[0,3]
           y = cam_pose[1,3]
-          if x > 1.0 or y < 0.0 or y > 1.5:
+          if x > 1.25 or y < -0.75 or y > 1.25:
               return True
           else:
               door_edge_pose = self._door_edge_position()
               ex = door_edge_pose[0,3]
-              if ex+0.2 < x:
+              if ex+0.25 < x:
                   rospy.loginfo("hook is far away from the door edge")
                   return True
       else:
