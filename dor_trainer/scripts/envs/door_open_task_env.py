@@ -33,8 +33,9 @@ class DoorOpenTaskEnv(GymGazeboEnv):
 
     rospy.logdebug("Start DoorOpenTaskEnv INIT...")
     self.gazebo.unpauseSim()
-
+    self.door_dim = [0.9144, 0.0698] # length, width
     self.out = False
+    self.open = False
     self.bridge = CvBridge()
     self.resolution = resolution
     self.max_episode_steps = 200
@@ -77,13 +78,14 @@ class DoorOpenTaskEnv(GymGazeboEnv):
     """Sets the Robot in its init pose
     """
     self.out = False
+    self.open = False
     self.step_cnt = 0
 
     # wait the door closed
-    door_edge_pose = self._door_edge_position(0.9144,0)
-    while door_edge_pose[0,3] > 0.15:
-        door_edge_pose = self._door_edge_position(0.9144,0)
+    door_r, door_a = self._door_position()
+    while door_a > 0.15:
         rospy.sleep(1)
+        door_r, door_a = self._door_position()
 
     robot = ModelState()
     robot.model_name = 'mobile_robot'
@@ -190,21 +192,21 @@ class DoorOpenTaskEnv(GymGazeboEnv):
         return True
     elif self._door_open_failed():
         return True
+    elif self._door_is_open():
+        self.open = True
+        return True
 
     return False
 
   def _compute_reward(self):
     """Calculates the reward to give based on the observations given.
     """
-    out_reward = 0
-    if self._robot_is_out():
-        out_reward = 100
-
-    # the distance between robot and the door edge
-    door_pose = self._door_edge_position(0.9144,0)
-    door_x = door_pose[0,3]
-    robot_x = self.robot_pose.position.x
-    pose_penalty = 0.1*(robot_x-door_x)
+    done_reward = 0
+    if self._is_done():
+        doorpose_r, doorpos_a = self._door_position()
+        done_reward = doorpos_a*10
+        if self._door_is_open():
+            done_reward = doorpos_a*100
 
     # failure penalty
     failed_penalty = 0
@@ -212,40 +214,52 @@ class DoorOpenTaskEnv(GymGazeboEnv):
         failed_penalty = 10*(self.max_episode_steps-self.step_cnt)/self.max_episode_steps
 
     # try to achieve less steps
-    step_penalty = 0.01
+    step_penalty = 0.1
 
-    return out_reward-pose_penalty-failed_penalty-step_penalty
+    #print("step reward and penalty: ", done_reward, failed_penalty, step_penalty)
+    return done_reward-failed_penalty-step_penalty
 
+
+  def _door_is_open(self):
+      doorpose_r, doorpos_a = self._door_position()
+      if doorpos_a > 0.45*math.pi: # 81 degree
+          return True
+      return False
 
   # check the position of camera
   # if it is in the door block, still trying
   # else failed, reset env
   def _door_open_failed(self):
-      cam_pose = self._robot_footprint_position(0.5,-0.25)
       if not self._robot_is_out():
-          x = cam_pose[0,3]
-          y = cam_pose[1,3]
-          if x > 1.25 or y < -0.75 or y > 1.25:
+          campose_r, campose_a = self._camera_position()
+          doorpose_r, doorpos_a = self._door_position()
+          if campose_r > 1.1*doorpose_r or campose_a > 1.1*doorpos_a:
               return True
-          else:
-              door_edge_pose = self._door_edge_position()
-              ex = door_edge_pose[0,3]
-              if ex+0.25 < x:
-                  rospy.loginfo("hook is far away from the door edge")
-                  return True
-      else:
-          return False
+      return False
 
-  def _door_edge_position(self,length=0.9144,width=0.0698):
+  # camera position in door polar coordinate frame
+  # return radius to (0,0) and angle 0 for (0,1,0)
+  def _camera_position(self):
+      cam_pose = self._robot_footprint_position(0.5,-0.25)
+      angle = math.atan2(cam_pose[0,3],cam_pose[1,3])
+      radius = math.sqrt(cam_pose[0,3]*cam_pose[0,3]+cam_pose[1,3]*cam_pose[1,3])
+      return radius, angle
+
+  # door position in polar coordinate frame
+  # retuen radius to (0,0) and angle 0 for (0,1,0)
+  def _door_position(self):
       door_matrix = self._pose_matrix(self.door_pose)
-      door_edge = np.array([[1,0,0,length],
-                            [0,1,0,width],
+      door_edge = np.array([[1,0,0,self.door_dim[0]],
+                            [0,1,0,0],
                             [0,0,1,0],
                             [0,0,0,1]])
       door_edge_mat = np.dot(door_matrix, door_edge)
-      return door_edge_mat
+      # open angle [0, pi/2]
+      open_angle = math.atan2(door_edge_mat[0,3],door_edge_mat[1,3])
+      return self.door_dim[0], open_angle
 
 
+  # robot is out of the door way (x < 0)
   def _robot_is_out(self):
       # footprint of robot
       footprint_lf = self._robot_footprint_position(0.25,0.25)
@@ -257,6 +271,7 @@ class DoorOpenTaskEnv(GymGazeboEnv):
       else:
           return False
 
+  # utility function
   def _robot_footprint_position(self,x,y):
       robot_matrix = self._pose_matrix(self.robot_pose)
       footprint_trans = np.array([[1,0,0,x],

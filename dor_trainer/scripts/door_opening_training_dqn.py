@@ -63,7 +63,7 @@ if __name__=='__main__':
         # log infomation for each episode
         episodic_returns.append(ep_rew)
         sedimentary_returns.append(sum(episodic_returns)/(ep+1))
-        if env.out:
+        if env.open:
             success_counter += 1
 
         tf.summary.scalar("episode total reward", ep_rew, step=ep)
