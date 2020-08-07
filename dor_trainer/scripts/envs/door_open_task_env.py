@@ -38,7 +38,7 @@ class DoorOpenTaskEnv(GymGazeboEnv):
     self.open = False
     self.bridge = CvBridge()
     self.resolution = resolution
-    self.max_episode_steps = 200
+    self.max_episode_steps = 100
     self.info = {}
     self.action_space = 2*np.array([[1.5,3.14],[1.5,0.0],[0.0,3.14],[-1.5,3.14],[-1.5,0.0]]) # x and yaw velocities
     self._check_all_sensors_ready()
@@ -81,17 +81,41 @@ class DoorOpenTaskEnv(GymGazeboEnv):
     self.open = False
     self.step_cnt = 0
 
+    # reset mobile rebot velocity
+    msg = Twist()
+    msg.linear.x = 0
+    msg.linear.y = 0
+    msg.linear.z = 0
+    msg.angular.x = 0
+    msg.angular.y = 0
+    msg.angular.z = 0
+    self.vel_pub.publish(msg)
+
+    # reset mobile_robot position
+    robot = ModelState()
+    robot.model_name = 'mobile_robot'
+    robot.pose.position.x = 1.5
+    robot.pose.position.y = 0.5
+    robot.pose.position.z = 0.075
+    rq = quaternion_from_euler(0,0,3.14)
+    robot.pose.orientation.x = rq[0]
+    robot.pose.orientation.y = rq[1]
+    robot.pose.orientation.z = rq[2]
+    robot.pose.orientation.w = rq[3]
+    self.robot_pose_pub.publish(robot)
+
     # wait the door closed
     door_r, door_a = self._door_position()
     while door_a > 0.15:
         rospy.sleep(1)
         door_r, door_a = self._door_position()
 
+    # reset mobile robot position to open door
     robot = ModelState()
     robot.model_name = 'mobile_robot'
     robot.pose.position.x = 0.61
     robot.pose.position.y = 0.77
-    robot.pose.position.z =0.075
+    robot.pose.position.z = 0.075
     rq = quaternion_from_euler(0,0,3.3)
     robot.pose.orientation.x = rq[0]
     robot.pose.orientation.y = rq[1]
@@ -203,10 +227,11 @@ class DoorOpenTaskEnv(GymGazeboEnv):
     """
     done_reward = 0
     if self._is_done():
-        doorpose_r, doorpos_a = self._door_position()
-        done_reward = doorpos_a*10
         if self._door_is_open():
-            done_reward = doorpos_a*100
+            done_reward = 100
+        else:
+            doorpose_r, doorpos_a = self._door_position()
+            done_reward = doorpos_a*10
 
     # failure penalty
     failed_penalty = 0
@@ -217,7 +242,7 @@ class DoorOpenTaskEnv(GymGazeboEnv):
     step_penalty = 0.1
 
     #print("step reward and penalty: ", done_reward, failed_penalty, step_penalty)
-    return done_reward-failed_penalty-step_penalty
+    return done_reward-step_penalty
 
 
   def _door_is_open(self):

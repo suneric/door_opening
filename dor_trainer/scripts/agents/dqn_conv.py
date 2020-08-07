@@ -92,7 +92,7 @@ class DQNAgent:
         dim_act=5,
         buffer_size=int(1e4),
         decay_period=1000,
-        warmup_episodes=1000,
+        warmup_episodes=600,
         init_epsilon=1.,
         final_epsilon=.1,
         learning_rate=1e-3,
