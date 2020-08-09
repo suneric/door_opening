@@ -6,6 +6,7 @@ the action space should be discreted
 import tensorflow as tf
 import numpy as np
 import logging
+import rospy
 
 ################################################################
 """
@@ -68,15 +69,15 @@ def dqn(dim_img, dim_act, activation='relu'):
     Gives you a flavored DQN model
     """
 
-    img_input = tf.keras.Input(shape=(dim_img[0],dim_img[1],dim_img[2]), name='img')
+    img_input = tf.keras.Input(shape=(dim_img[0],dim_img[1],dim_img[2]), name='img',dtype=tf.float32)
     # image features
-    img_feature = tf.keras.layers.Conv2D(32, 3, padding='same', activation=activation)(img_input)
+    img_feature = tf.keras.layers.Conv2D(64, 3, padding='same', activation=activation)(img_input)
     img_feature = tf.keras.layers.MaxPool2D((2,2))(img_feature)
     img_feature = tf.keras.layers.Conv2D(32, 3, padding='same', activation=activation)(img_feature)
     img_feature = tf.keras.layers.MaxPool2D((2,2))(img_feature)
-    img_feature = tf.keras.layers.Conv2D(32, 3, padding='same', activation=activation)(img_feature)
+    img_feature = tf.keras.layers.Conv2D(16, 3, padding='same', activation=activation)(img_feature)
     img_feature = tf.keras.layers.Flatten()(img_feature)
-    img_feature = tf.keras.layers.Dense(128, activation=activation)(img_feature)
+    img_feature = tf.keras.layers.Dense(256, activation=activation)(img_feature)
     q_vals = tf.keras.layers.Dense(dim_act, activation=None, name='Q_values')(img_feature)
 
     return tf.keras.Model(inputs=img_input, outputs=q_vals)
@@ -89,14 +90,14 @@ class DQNAgent:
         name='dqn_agent',
         dim_img=(64,64,3),
         dim_act=5,
-        buffer_size=int(1e4),
+        buffer_size=int(1e5),
         decay_period=1000,
         warmup_episodes=600,
         init_epsilon=1.,
         final_epsilon=.1,
         learning_rate=1e-3,
         loss_fn=tf.keras.losses.MeanSquaredError(),
-        batch_size=32,
+        batch_size=128, # popular 32,64,128
         discount_rate=0.998,
         sync_step=1000):
         # hyper parameters
@@ -162,7 +163,7 @@ class DQNAgent:
             targ_qvals = minibatch['rew'] + (1. - minibatch['done'])*self.gamma*nxt_qvals
             # compute loss
             loss_q = self.loss_fn(y_true=targ_qvals, y_pred=pred_qvals)
-            logging.info("loss_Q: {}".format(loss_q))
+            rospy.logdebug("loss_Q: {}".format(loss_q))
         # gradient decent
         grads = tape.gradient(loss_q, self.dqn_active.trainable_weights)
         self.optimizer.apply_gradients(zip(grads, self.dqn_active.trainable_weights))

@@ -184,7 +184,8 @@ class DoorOpenTaskEnv(GymGazeboEnv):
   def _get_observation(self):
     # rgb color image
     img = cv2.resize(self.image, self.resolution)
-    img_arr = np.array(img)/255.0
+    # normalize the image for easier training
+    img_arr = np.array(img)/255 - 0.5
     obs = img_arr.reshape((64,64,3))
     return obs
 
