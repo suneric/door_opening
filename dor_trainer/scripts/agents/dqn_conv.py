@@ -36,11 +36,11 @@ class ReplayBuffer:
     An off-policy replay buffer for DQN agent
     """
     def __init__(self, buf_size, dim_img):
-        self.img_buf = np.zeros(shape=(buf_size, dim_img[0], dim_img[1],1), dtype=np.float32)
-        self.nxt_img_buf = np.zeros_like(self.img_buf)
-        self.act_buf = np.zeros(shape=buf_size, dtype=np.int)
+        self.img_buf = np.zeros(shape=(buf_size, dim_img[0], dim_img[1], dim_img[2]), dtype=np.float32)
+        self.act_buf = np.zeros(shape=buf_size, dtype=np.int32)
         self.rew_buf = np.zeros(shape=buf_size, dtype=np.float32)
-        self.done_buf = np.zeros(shape=buf_size, dtype=np.bool)
+        self.done_buf = np.zeros(shape=buf_size, dtype=np.float32)
+        self.nxt_img_buf = np.zeros(shape=(buf_size, dim_img[0], dim_img[1], dim_img[2]), dtype=np.float32)
         self.ptr, self.size, self.max_size = 0, 0, buf_size
 
     def store(self, img, act, rew, done, nxt_img):
@@ -61,7 +61,6 @@ class ReplayBuffer:
             done = tf.convert_to_tensor(self.done_buf[ids], dtype=tf.float32),
             nxt_img = tf.convert_to_tensor(self.nxt_img_buf[ids], dtype=tf.float32),
         )
-
         return batch
 
 def dqn(dim_img, dim_act, activation='relu'):
@@ -69,15 +68,15 @@ def dqn(dim_img, dim_act, activation='relu'):
     Gives you a flavored DQN model
     """
 
-    img_input = tf.keras.Input(shape=(dim_img[0],dim_img[1],1), name='img')
+    img_input = tf.keras.Input(shape=(dim_img[0],dim_img[1],dim_img[2]), name='img')
     # image features
-    img_feature = tf.keras.layers.Conv2D(32,3, padding='same', activation=activation)(img_input)
+    img_feature = tf.keras.layers.Conv2D(32, 3, padding='same', activation=activation)(img_input)
     img_feature = tf.keras.layers.MaxPool2D((2,2))(img_feature)
-    img_feature = tf.keras.layers.Conv2D(64, 3, padding='same', activation=activation)(img_feature)
+    img_feature = tf.keras.layers.Conv2D(32, 3, padding='same', activation=activation)(img_feature)
     img_feature = tf.keras.layers.MaxPool2D((2,2))(img_feature)
-    img_feature = tf.keras.layers.Conv2D(64, 3, padding='same', activation=activation)(img_feature)
+    img_feature = tf.keras.layers.Conv2D(32, 3, padding='same', activation=activation)(img_feature)
     img_feature = tf.keras.layers.Flatten()(img_feature)
-    img_feature = tf.keras.layers.Dense(64, activation=activation)(img_feature)
+    img_feature = tf.keras.layers.Dense(128, activation=activation)(img_feature)
     q_vals = tf.keras.layers.Dense(dim_act, activation=None, name='Q_values')(img_feature)
 
     return tf.keras.Model(inputs=img_input, outputs=q_vals)
@@ -88,7 +87,7 @@ class DQNAgent:
     """
     def __init__(self,
         name='dqn_agent',
-        dim_img=(64,64,1),
+        dim_img=(64,64,3),
         dim_act=5,
         buffer_size=int(1e4),
         decay_period=1000,
@@ -98,7 +97,7 @@ class DQNAgent:
         learning_rate=1e-3,
         loss_fn=tf.keras.losses.MeanSquaredError(),
         batch_size=32,
-        discount_rate=0.99,
+        discount_rate=0.998,
         sync_step=1000):
         # hyper parameters
         self.name = name
@@ -175,9 +174,9 @@ class DQNAgent:
 
 if __name__=='__main__':
     agent = DQNAgent(name='test_dqn_agent',
-        dim_img=(64,64,1),
-        dim_act=8,
+        dim_img=(64,64,3),
+        dim_act=5,
         buffer_size=10)
-    test_img = np.random.rand(8,64,64,1)
+    test_img = np.random.rand(8,64,64,3)
     qvals = agent.dqn_active(test_img)
     print("qvals: {}".format(qvals))

@@ -182,10 +182,10 @@ class DoorOpenTaskEnv(GymGazeboEnv):
 
 
   def _get_observation(self):
-    img = cv2.cvtColor(self.image, cv2.COLOR_RGB2GRAY)
-    img = cv2.resize(img, self.resolution)
-    float_arr = np.array(img)/255
-    obs = float_arr.reshape((64,64,1))
+    # rgb color image
+    img = cv2.resize(self.image, self.resolution)
+    img_arr = np.array(img)/255.0
+    obs = img_arr.reshape((64,64,3))
     return obs
 
   def _post_information(self):
