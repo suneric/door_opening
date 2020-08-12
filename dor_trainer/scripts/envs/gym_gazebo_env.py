@@ -1,7 +1,7 @@
 import numpy as np
 import rospy
 import gym # https://github.com/openai/gym/blob/master/gym/core.py
-from gym.utils import seeding
+# from gym.utils import seeding
 from .gazebo_connection import GazeboConnection
 
 class GymGazeboEnv(gym.Env):
@@ -18,13 +18,13 @@ class GymGazeboEnv(gym.Env):
     # To reset Simulations
     rospy.logdebug("START init RobotGazeboEnv")
     self.gazebo = GazeboConnection(start_init_physics_parameters,reset_world_or_sim)
-    self.seed()
+    # self.seed()
     rospy.logdebug("END init RobotGazeboEnv")
 
   # Env methods
-  def seed(self, seed=None):
-    self.np_random, seed = seeding.np_random(seed)
-    return [seed]
+  # def seed(self, seed=None):
+  #   self.np_random, seed = seeding.np_random(seed)
+  #   return [seed]
 
   def step(self, action):
     """

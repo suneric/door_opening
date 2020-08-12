@@ -13,6 +13,9 @@ from envs.door_open_task_env import DoorOpenTaskEnv
 import rospy
 import tensorflow as tf
 
+# application wise random seed
+np.random.seed(7)
+
 if __name__=='__main__':
     rospy.init_node('dqn_train', anonymous=True, log_level=rospy.INFO)
     # instantiate env

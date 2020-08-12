@@ -5,8 +5,8 @@ the action space should be discreted
 """
 import tensorflow as tf
 import numpy as np
-import logging
 import rospy
+
 
 ################################################################
 """
@@ -95,7 +95,7 @@ class DQNAgent:
         warmup_episodes=600,
         init_epsilon=1.,
         final_epsilon=.1,
-        learning_rate=1e-3,
+        learning_rate=1e-4,
         loss_fn=tf.keras.losses.MeanSquaredError(),
         batch_size=128, # popular 32,64,128
         discount_rate=0.998,
@@ -130,7 +130,7 @@ class DQNAgent:
             action = np.argmax(vals)
         else:
             action = np.random.randint(self.dim_act)
-            logging.warning("{} performs a random action: {}".format(self.name, action))
+            rospy.logdebug("{} performs a random action: {}".format(self.name, action))
 
         return action
 
