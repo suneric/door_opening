@@ -42,7 +42,7 @@ def random_test(episode):
 
 def dqn_test(episode):
     env = DoorOpenTaskEnv(resolution=(64,64))
-    agent = DQNAgent(name='dqn_door_open',dim_img=(64,64,3),dim_act=3)
+    agent = DQNAgent(name='door_open',dim_img=(64,64,3),dim_act=3)
     model_path = os.path.join(sys.path[0], 'saved_models', agent.name, 'models')
     agent.dqn_active = tf.keras.models.load_model(model_path)
 
