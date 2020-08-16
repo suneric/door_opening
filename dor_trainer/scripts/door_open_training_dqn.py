@@ -35,6 +35,7 @@ if __name__=='__main__':
     model_path = os.path.join(sys.path[0], 'saved_models', agent_p.name, 'models')
 
     # use tensorboard
+    train_loss = tf.keras.metrics.Mean('train_loss', dtype=tf.float32)
     summary_writer = tf.summary.create_file_writer(model_path)
     summary_writer.set_as_default()
 
@@ -56,7 +57,7 @@ if __name__=='__main__':
             if ep >= agent_p.warmup_episodes:
                 if not step_counter%train_freq:
                     for _ in range(train_freq):
-                        agent_p.train_one_step()
+                        agent_p.train_one_step(train_loss)
             # finish step, EXTREMELY IMPORTANT!!!
             img = nxt_img.copy()
             logging.debug("\n-\nepisode: {}, step: {} \naction: {} \nreward: {} \ndone: {}".format(ep+1, st+1, act, rew, done))
@@ -70,6 +71,7 @@ if __name__=='__main__':
             success_counter += 1
 
         tf.summary.scalar("episode total reward", ep_rew, step=ep)
+        tf.summary.scalar('loss', train_loss.result(), step=ep)
 
         rospy.loginfo(
             "\n================\nEpisode: {} \nEpsilon: {} \nEpisodeLength: {} \nEpisodeTotalRewards: {} \nAveragedTotalReward: {} \nSuccess: {} \nTime: {} \n================\n".format(
@@ -83,6 +85,7 @@ if __name__=='__main__':
             )
         )
 
+        train_loss.reset_states()
 
     # plot averaged returns
     # fig, ax = plt.subplots(figsize=(8, 6))

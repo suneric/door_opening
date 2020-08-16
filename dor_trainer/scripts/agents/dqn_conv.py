@@ -71,13 +71,13 @@ def dqn(dim_img, dim_act, activation='relu'):
 
     img_input = tf.keras.Input(shape=(dim_img[0],dim_img[1],dim_img[2]), name='img',dtype=tf.float32)
     # image features
-    img_feature = tf.keras.layers.Conv2D(64, 3, padding='same', activation=activation)(img_input)
+    img_feature = tf.keras.layers.Conv2D(32, 3, padding='same', activation=activation)(img_input)
     img_feature = tf.keras.layers.MaxPool2D((2,2))(img_feature)
     img_feature = tf.keras.layers.Conv2D(32, 3, padding='same', activation=activation)(img_feature)
     img_feature = tf.keras.layers.MaxPool2D((2,2))(img_feature)
-    img_feature = tf.keras.layers.Conv2D(16, 3, padding='same', activation=activation)(img_feature)
+    img_feature = tf.keras.layers.Conv2D(32, 3, padding='same', activation=activation)(img_feature)
     img_feature = tf.keras.layers.Flatten()(img_feature)
-    img_feature = tf.keras.layers.Dense(256, activation=activation)(img_feature)
+    img_feature = tf.keras.layers.Dense(128, activation=activation)(img_feature)
     q_vals = tf.keras.layers.Dense(dim_act, activation=None, name='Q_values')(img_feature)
 
     return tf.keras.Model(inputs=img_input, outputs=q_vals)
@@ -90,15 +90,15 @@ class DQNAgent:
         name='dqn_agent',
         dim_img=(64,64,3),
         dim_act=5,
-        buffer_size=int(1e5),
-        decay_period=1000,
-        warmup_episodes=600,
+        buffer_size=int(1e4),
+        decay_period=2000,
+        warmup_episodes=200,
         init_epsilon=1.,
         final_epsilon=.1,
-        learning_rate=1e-4,
+        learning_rate=1e-3,
         loss_fn=tf.keras.losses.MeanSquaredError(),
-        batch_size=128, # popular 32,64,128
-        discount_rate=0.998,
+        batch_size=64, # popular 32,64,128
+        discount_rate=0.99,
         sync_step=1000):
         # hyper parameters
         self.name = name
@@ -148,7 +148,7 @@ class DQNAgent:
         self.epsilon = self.final_epsilon + bonus
 
     # @tf.function
-    def train_one_step(self):
+    def train_one_step(self, train_loss):
         minibatch = self.replay_buffer.sample_batch(batch_size=self.batch_size)
         with tf.GradientTape() as tape:
             # compute current Q
@@ -167,6 +167,7 @@ class DQNAgent:
         # gradient decent
         grads = tape.gradient(loss_q, self.dqn_active.trainable_weights)
         self.optimizer.apply_gradients(zip(grads, self.dqn_active.trainable_weights))
+        train_loss(loss_q)
         self.fit_cntr += 1
         # update dqn_stable if C steps of q_val fitted
         if not self.fit_cntr%self.sync_step:
