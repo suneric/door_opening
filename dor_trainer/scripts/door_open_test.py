@@ -42,7 +42,7 @@ def random_test(episode):
 
 def dqn_test(episode):
     env = DoorOpenTaskEnv(resolution=(64,64))
-    agent = DQNAgent(name='door_open',dim_img=(64,64,3),dim_act=3)
+    agent = DQNAgent(name='door_open',dim_img=(64,64,3),dim_act=5)
     model_path = os.path.join(sys.path[0], 'saved_models', agent.name, 'models')
     agent.dqn_active = tf.keras.models.load_model(model_path)
 
@@ -52,15 +52,15 @@ def dqn_test(episode):
     episodic_returns = []
     sedimentary_returns = []
     ep_rew = 0
+    agent.epsilon = 0.0
     for ep in range(episode):
         obs, info = env.reset()
         ep_rew = 0
         img = obs.copy()
         for st in range(steps):
-            vals = agent.dqn_active(np.expand_dims(img, axis=0))
-            act = np.argmax(vals)
+            act = agent.epsilon_greedy(img)
             obs, rew, done, info = env.step(act)
-            nxt_img = obs.copy()
+            img = obs.copy()
             ep_rew += rew
             if done:
                 break
@@ -88,9 +88,11 @@ def get_args():
     parser.add_argument('--eps', type=int, default=10) # test episode
     return parser.parse_args()
 
+
+np.random.seed(7)
+
 if __name__ == "__main__":
     args = get_args()
-    print(args)
     rospy.init_node('env_test', anonymous=True, log_level=rospy.INFO)
     if args.dqn == 1:
         dqn_test(args.eps)

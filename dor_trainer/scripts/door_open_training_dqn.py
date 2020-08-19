@@ -21,7 +21,7 @@ if __name__=='__main__':
     # instantiate env
     env = DoorOpenTaskEnv(resolution=(64,64))
     # parameter
-    num_episodes = 6000
+    num_episodes = 10000
     num_steps = env.max_episode_steps
     train_freq = 80
     # variables
