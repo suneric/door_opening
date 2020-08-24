@@ -168,7 +168,7 @@ class DoorOpenTaskEnv(GymGazeboEnv):
     self.camera = CameraSensor(resolution,noise)
     self.driver = RobotDriver(noise)
     self.pose_sensor = PoseSensor(noise)
-    
+
     self._check_all_sensors_ready()
     self.robot_pose_pub = rospy.Publisher('/gazebo/set_model_state', ModelState, queue_size=1)
     self._check_publisher_connection()
@@ -244,9 +244,9 @@ class DoorOpenTaskEnv(GymGazeboEnv):
     # if self._door_open_failed():
     #     failed_penalty = 10*(self.max_episode_steps-self.step_cnt)/self.max_episode_steps
     # # try to achieve less steps
-    # step_penalty = 0.1
+    step_penalty = 0.1
     #print("step reward and penalty: ", done_reward, failed_penalty, step_penalty)
-    return done_reward
+    return done_reward-step_penalty
 
 
   #############################################################################
