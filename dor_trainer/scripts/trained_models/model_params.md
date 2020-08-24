@@ -1,8 +1,7 @@
 # trained models
 ## model 0
 - name: door_open_0
-- learning curve:
-  [](model_0.svg)
+- learning curve:![learning curve](/model_0.svg)
 - parameters:
   - dqn cnn:
     - input: 64x64x3
