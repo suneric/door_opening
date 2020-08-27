@@ -15,7 +15,7 @@
     - Dense: 128
     - output: 8
   - observation: rgb image 64x64x3
-  - action dimension (linear vel x, angular vel z): [[3.0,6.28], [3.0,0.0], [0.0,6.28],[-3.0,6.28],[-3.0,0.0],[1.5,-3.14],[0.0,-3.14],[-1.5,-3.14]]
+  - action dimension (linear vel x, angular vel z): [[3.0,6.28], [3.0,0.0], [0.0,6.28],[-3.0,6.28],[-3.0,0.0],[3,-6.28],[0.0,-6.28],[-3,-6.28]]
   - door is open when angle of door is over 0.45*pi
   - step reward: open*100+!open*10*delta_angle
   - initial door angle: 0.1
