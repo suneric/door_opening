@@ -157,7 +157,7 @@ class DoorOpenTaskEnv(GymGazeboEnv):
     self.door_dim = [0.9144, 0.0698] # length, width
     self.info = {}
     self.max_episode_steps = 100
-    self.action_space = 2*np.array([[1.5,3.14],[1.5,0.0],[0.0,3.14],[-1.5,3.14],[-1.5,0.0]]) # x and yaw velocities
+    self.action_space = 2*np.array([[1.5,3.14],[1.5,0.0],[0.0,3.14],[-1.5,3.14],[-1.5,0.0],[1.5,-3.14],[0.0,-3.14],[-1.5,-3.14]]) # x and yaw velocities
     self.step_cnt = 0
     self.door_angle = 0.1 # inital angle of door
     self.open = False
@@ -175,6 +175,11 @@ class DoorOpenTaskEnv(GymGazeboEnv):
 
     self.gazebo.pauseSim()
     rospy.logdebug("Finished DoorOpenTaskEnv INIT...")
+
+  def action_dimension(self):
+      dim = self.action_space.shape
+      print("action dimension: ", dim[0])
+      return dim[0]
 
   def _set_init(self):
     """Sets the Robot in its init pose
@@ -244,9 +249,9 @@ class DoorOpenTaskEnv(GymGazeboEnv):
     # if self._door_open_failed():
     #     failed_penalty = 10*(self.max_episode_steps-self.step_cnt)/self.max_episode_steps
     # # try to achieve less steps
-    step_penalty = 0.1
+    # step_penalty = 0.1
     #print("step reward and penalty: ", done_reward, failed_penalty, step_penalty)
-    return done_reward-step_penalty
+    return done_reward
 
 
   #############################################################################

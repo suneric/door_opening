@@ -23,13 +23,14 @@ from envs.door_open_task_env import DoorOpenTaskEnv
 
 def random_test(episode):
     env = DoorOpenTaskEnv()
+    act_dim = env.action_dimension()
     # test env with random sampled actions
     steps = env.max_episode_steps
     for ep in range(episode):
         state, info = env.reset()
         done = False
         for step in range(steps):
-            action_idx = np.random.randint(5)
+            action_idx = np.random.randint(act_dim)
             next_state, reward, done, info = env.step(action_idx)
             print("Episode : {}, Step: {}, \n current pose.x: {},, Reward: {:.4f}".format(
                 episode,
@@ -42,7 +43,8 @@ def random_test(episode):
 
 def dqn_test(episode):
     env = DoorOpenTaskEnv(resolution=(64,64))
-    agent = DQNAgent(name='door_open',dim_img=(64,64,3),dim_act=5)
+    act_dim = env.action_dimension()
+    agent = DQNAgent(name='door_open',dim_img=(64,64,3),dim_act=act_dim)
     model_path = os.path.join(sys.path[0], 'saved_models', agent.name, 'models')
     agent.dqn_active = tf.keras.models.load_model(model_path)
 

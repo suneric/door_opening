@@ -20,6 +20,7 @@ if __name__=='__main__':
     rospy.init_node('dqn_train', anonymous=True, log_level=rospy.INFO)
     # instantiate env
     env = DoorOpenTaskEnv(resolution=(64,64))
+    act_dim = env.action_dimension()
     # parameter
     num_episodes = 10000
     num_steps = env.max_episode_steps
@@ -31,7 +32,7 @@ if __name__=='__main__':
     sedimentary_returns = []
     ep_rew = 0
     # instantiate agent
-    agent_p = DQNAgent(name='door_open',dim_img=(64,64,3),dim_act=5)
+    agent_p = DQNAgent(name='door_open',dim_img=(64,64,3),dim_act=act_dim)
     model_path = os.path.join(sys.path[0], 'saved_models', agent_p.name, 'models')
 
     # use tensorboard
