@@ -244,14 +244,10 @@ class DoorOpenTaskEnv(GymGazeboEnv):
         delta_a = door_a-self.door_angle
         done_reward = delta_a*10
 
-    # # failure penalty
-    # failed_penalty = 0
-    # if self._door_open_failed():
-    #     failed_penalty = 10*(self.max_episode_steps-self.step_cnt)/self.max_episode_steps
-    # # try to achieve less steps
-    # step_penalty = 0.1
-    #print("step reward and penalty: ", done_reward, failed_penalty, step_penalty)
-    return done_reward
+    # try to achieve less steps
+    step_penalty = 0.1
+    #print("step reward and penalty: ", done_reward, step_penalty)
+    return done_reward-step_penalty
 
 
   #############################################################################
