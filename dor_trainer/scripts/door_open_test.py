@@ -19,7 +19,7 @@ import pickle
 import argparse
 
 from agents.dqn_conv import DQNAgent
-from envs.door_open_task_env import DoorOpenTaskEnv
+from envs.door_open_specific_envs import DoorPullTaskEnv, DoorPushTaskEnv, DoorTraverseTaskEnv
 
 def random_test(episode):
     env = DoorOpenTaskEnv()
@@ -41,10 +41,10 @@ def random_test(episode):
             if done:
                 break
 
-def dqn_test(episode):
-    env = DoorOpenTaskEnv(resolution=(64,64))
+def dqn_pull_test(episode):
+    env = DoorPullTaskEnv(resolution=(64,64))
     act_dim = env.action_dimension()
-    agent = DQNAgent(name='door_open',dim_img=(64,64,3),dim_act=act_dim)
+    agent = DQNAgent(name='door_pull',dim_img=(64,64,3),dim_act=act_dim)
     model_path = os.path.join(sys.path[0], 'saved_models', agent.name, 'models')
     agent.dqn_active = tf.keras.models.load_model(model_path)
 
@@ -70,7 +70,93 @@ def dqn_test(episode):
         # log infomation for each episode
         episodic_returns.append(ep_rew)
         sedimentary_returns.append(sum(episodic_returns)/(ep+1))
-        if env.open:
+        if env.success:
+            success_counter += 1
+
+        rospy.loginfo(
+            "\n================\nEpisode: {} \nEpisodeLength: {} \nEpisodeTotalRewards: {} \nAveragedTotalReward: {} \nSuccess: {} \nTime: {} \n================\n".format(
+                ep+1,
+                st+1,
+                ep_rew,
+                sedimentary_returns[-1],
+                success_counter,
+                time.time()-start_time
+            )
+        )
+
+def dqn_push_test(episode):
+    env = DoorPushTaskEnv(resolution=(64,64))
+    act_dim = env.action_dimension()
+    agent = DQNAgent(name='door_push',dim_img=(64,64,3),dim_act=act_dim)
+    model_path = os.path.join(sys.path[0], 'saved_models', agent.name, 'models')
+    agent.dqn_active = tf.keras.models.load_model(model_path)
+
+    steps = env.max_episode_steps
+    start_time = time.time()
+    success_counter = 0
+    episodic_returns = []
+    sedimentary_returns = []
+    ep_rew = 0
+    agent.epsilon = 0.0
+    for ep in range(episode):
+        obs, info = env.reset()
+        ep_rew = 0
+        img = obs.copy()
+        for st in range(steps):
+            act = agent.epsilon_greedy(img)
+            obs, rew, done, info = env.step(act)
+            img = obs.copy()
+            ep_rew += rew
+            if done:
+                break
+
+        # log infomation for each episode
+        episodic_returns.append(ep_rew)
+        sedimentary_returns.append(sum(episodic_returns)/(ep+1))
+        if env.success:
+            success_counter += 1
+
+        rospy.loginfo(
+            "\n================\nEpisode: {} \nEpisodeLength: {} \nEpisodeTotalRewards: {} \nAveragedTotalReward: {} \nSuccess: {} \nTime: {} \n================\n".format(
+                ep+1,
+                st+1,
+                ep_rew,
+                sedimentary_returns[-1],
+                success_counter,
+                time.time()-start_time
+            )
+        )
+
+def dqn_traverse_test(episode):
+    env = DoorTraverseTaskEnv(resolution=(64,64))
+    act_dim = env.action_dimension()
+    agent = DQNAgent(name='door_traverse',dim_img=(64,64,3),dim_act=act_dim)
+    model_path = os.path.join(sys.path[0], 'saved_models', agent.name, 'models')
+    agent.dqn_active = tf.keras.models.load_model(model_path)
+
+    steps = env.max_episode_steps
+    start_time = time.time()
+    success_counter = 0
+    episodic_returns = []
+    sedimentary_returns = []
+    ep_rew = 0
+    agent.epsilon = 0.0
+    for ep in range(episode):
+        obs, info = env.reset()
+        ep_rew = 0
+        img = obs.copy()
+        for st in range(steps):
+            act = agent.epsilon_greedy(img)
+            obs, rew, done, info = env.step(act)
+            img = obs.copy()
+            ep_rew += rew
+            if done:
+                break
+
+        # log infomation for each episode
+        episodic_returns.append(ep_rew)
+        sedimentary_returns.append(sum(episodic_returns)/(ep+1))
+        if env.success:
             success_counter += 1
 
         rospy.loginfo(
@@ -86,7 +172,7 @@ def dqn_test(episode):
 
 def get_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--dqn', type=int, default=1) # dgn test 1 or random test 0
+    parser.add_argument('--dqn', type=string, default="pull") # dgn test 1 or random test 0
     parser.add_argument('--eps', type=int, default=10) # test episode
     return parser.parse_args()
 
@@ -96,7 +182,11 @@ np.random.seed(7)
 if __name__ == "__main__":
     args = get_args()
     rospy.init_node('env_test', anonymous=True, log_level=rospy.INFO)
-    if args.dqn == 1:
-        dqn_test(args.eps)
+    if args.dqn == "pull":
+        dqn_pull_test(args.eps)
+    elif args.dqn == "push":
+        dqn_push_test(args.eps)
+    elif args.dqn == "traverse":
+        dqn_traverse_test(args.eps)
     else:
         random_test(args.eps)

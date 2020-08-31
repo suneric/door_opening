@@ -1,8 +1,7 @@
-# trained models
-
+# door pull trained models
 ## model 0 (baseline)
-- name: door_open_0
-- learning curve:![learning curve](model_0.svg)
+- name: door_pull_0
+- learning curve:![learning curve](door_pull_0.svg)
 - parameters:
   - dqn cnn:
     - input: 64x64x3
@@ -33,8 +32,8 @@
   - buffer size: 10000  
 
 ## model 1 (reward with penaulty)
-- name: door_open_1
-- learning curve:![learning curve](model_1.svg)
+- name: door_pull_1
+- learning curve:![learning curve](door_pull_1.svg)
 - parameters:
   - dqn cnn:
     - input: 64x64x3
@@ -65,8 +64,8 @@
   - buffer size: 10000  
 
 ## model 2 (reduced action space)
-- name: door_open_2
-- learning curve:![learning curve](model_2.svg)
+- name: door_pull_2
+- learning curve:![learning curve](door_pull_2.svg)
 - parameters:
   - dqn cnn:
     - input: 64x64x3
@@ -97,8 +96,8 @@
   - buffer size: 10000   
 
 ## model 3 (reward with penaulty)
-- name: door_open_3
-- learning curve:![learning curve](model_3.svg)
+- name: door_pull_3
+- learning curve:![learning curve](door_pull_3.svg)
 - parameters:
   - dqn cnn:
     - input: 64x64x3

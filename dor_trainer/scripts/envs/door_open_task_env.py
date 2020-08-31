@@ -160,7 +160,7 @@ class DoorOpenTaskEnv(GymGazeboEnv):
     self.action_space = 2*np.array([[1.5,3.14],[1.5,0.0],[0.0,3.14],[-1.5,3.14],[-1.5,0.0],[1.5,-3.14],[0.0,-3.14],[-1.5,-3.14]]) # x and yaw velocities
     self.step_cnt = 0
     self.door_angle = 0.1 # inital angle of door
-    self.open = False
+    self.success = False
 
     rospy.logdebug("Start DoorOpenTaskEnv INIT...")
     self.gazebo.unpauseSim()
@@ -180,22 +180,6 @@ class DoorOpenTaskEnv(GymGazeboEnv):
       dim = self.action_space.shape
       print("action dimension: ", dim[0])
       return dim[0]
-
-  def _set_init(self):
-    """Sets the Robot in its init pose
-    """
-    # reset mobile rebot velocity as stop
-    self.driver.stop()
-    # reset mobile_robot position
-    self._reset_mobile_robot(1.5,0.5,0.075,3.14)
-    # wait the door closed
-    self._wait_door_closed()
-    # reset mobile robot position to open door
-    self._reset_mobile_robot(0.61,0.77,0.075,3.3)
-
-    self.step_cnt = 0
-    self.open_angle = 0.1
-    self.open = False
 
   def _check_all_systems_ready(self):
     """
@@ -221,38 +205,22 @@ class DoorOpenTaskEnv(GymGazeboEnv):
   def _post_information(self):
     return self.pose_sensor.robot()
 
+  #############################################################################
+  # overidde functions
+  def _set_init(self):
+    raise NotImplementedError()
+
   def _take_action(self, action_idx):
-    _,self.door_angle = self._door_position()
-    action = self.action_space[action_idx]
-    self.driver.drive(action[0],action[1])
-    rospy.sleep(0.5)
-    self.step_cnt += 1
-    self.open = self._door_is_open()
+    raise NotImplementedError()
 
   def _is_done(self):
-    if self._door_open_failed() or self._door_is_open() or self._robot_is_out():
-        return True
-    else:
-        return False
+    raise NotImplementedError()
 
   def _compute_reward(self):
-    done_reward = 0
-    if self.open:
-        done_reward = 100
-    else:
-        door_r, door_a = self._door_position()
-        delta_a = door_a-self.door_angle
-        done_reward = delta_a*10
-
-    # try to achieve less steps
-    step_penalty = 0.1
-    #print("step reward and penalty: ", done_reward, step_penalty)
-    return done_reward-step_penalty
-
+    raise NotImplementedError()
 
   #############################################################################
   # utility functions
-
   def _reset_mobile_robot(self,x,y,z,yaw):
       robot = ModelState()
       robot.model_name = 'mobile_robot'
@@ -278,17 +246,6 @@ class DoorOpenTaskEnv(GymGazeboEnv):
           return True
       else:
           return False
-
-  # check the position of camera
-  # if it is in the door block, still trying
-  # else failed, reset env
-  def _door_open_failed(self):
-      if not self._robot_is_out():
-          campose_r, campose_a = self._camera_position()
-          doorpose_r, doorpos_a = self._door_position()
-          if campose_r > 1.1*doorpose_r or campose_a > 1.1*doorpos_a:
-              return True
-      return False
 
   # camera position in door polar coordinate frame
   # return radius to (0,0) and angle 0 for (0,1,0)
@@ -319,7 +276,21 @@ class DoorOpenTaskEnv(GymGazeboEnv):
       footprint_lr = self._robot_footprint_position(-0.25,0.25)
       footprint_rf = self._robot_footprint_position(0.25,-0.25)
       footprint_rr = self._robot_footprint_position(-0.25,-0.25)
-      if footprint_lf[0,3] < 0.0 and footprint_lr[0,3] < 0.0 and footprint_rf[0,3] < 0.0 and footprint_rr[0,3] < 0.0:
+      camera_pose = self._robot_footprint_position(0.5,-0.25)
+      if footprint_lf[0,3] < 0.0 and footprint_lr[0,3] < 0.0 and footprint_rf[0,3] < 0.0 and footprint_rr[0,3] < 0.0 and camera_pose[0,3] < 0.0:
+          return True
+      else:
+          return False
+
+  def _robot_is_in(self):
+      # footprint of robot
+      _, door_angle = self._door_position()
+      footprint_lf = self._robot_footprint_position(0.25,0.25)
+      footprint_lr = self._robot_footprint_position(-0.25,0.25)
+      footprint_rf = self._robot_footprint_position(0.25,-0.25)
+      footprint_rr = self._robot_footprint_position(-0.25,-0.25)
+      camera_pose = self._robot_footprint_position(0.5,-0.25)
+      if footprint_lf[0,3] > 0.0 and footprint_lr[0,3] > 0.0 and footprint_rf[0,3] > 0.0 and footprint_rr[0,3] > 0.0 and camera_pose[0,3] > 0.0 and door_angle < 0.2 :
           return True
       else:
           return False
