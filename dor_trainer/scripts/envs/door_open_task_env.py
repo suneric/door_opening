@@ -178,7 +178,7 @@ class DoorOpenTaskEnv(GymGazeboEnv):
 
   def action_dimension(self):
       dim = self.action_space.shape
-      print("action dimension: ", dim[0])
+      # print("action dimension: ", dim[0])
       return dim[0]
 
   def _check_all_systems_ready(self):

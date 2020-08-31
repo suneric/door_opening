@@ -44,8 +44,8 @@ def random_test(episode):
 def dqn_pull_test(episode):
     env = DoorPullTaskEnv(resolution=(64,64))
     act_dim = env.action_dimension()
-    agent = DQNAgent(name='door_pull',dim_img=(64,64,3),dim_act=act_dim)
-    model_path = os.path.join(sys.path[0], 'saved_models', agent.name, 'models')
+    agent = DQNAgent(name='door_pull_3',dim_img=(64,64,3),dim_act=act_dim)
+    model_path = os.path.join(sys.path[0], 'trained_models', agent.name, 'models')
     agent.dqn_active = tf.keras.models.load_model(model_path)
 
     steps = env.max_episode_steps
@@ -172,7 +172,7 @@ def dqn_traverse_test(episode):
 
 def get_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--dqn', type=string, default="pull") # dgn test 1 or random test 0
+    parser.add_argument('--dqn', type=str, default="pull") # dgn test 1 or random test 0
     parser.add_argument('--eps', type=int, default=10) # test episode
     return parser.parse_args()
 

@@ -4,17 +4,12 @@ from __future__ import absolute_import, division, print_function
 
 import numpy as np
 import rospy
-from .gym_gazebo_env import GymGazeboEnv
-from gym.envs.registration import register
-from std_msgs.msg import Float64
-from gazebo_msgs.msg import LinkStates, ModelStates, ModelState, LinkState
-from std_msgs.msg import Float32MultiArray
-from geometry_msgs.msg import Pose, Twist
-from sensor_msgs.msg import Image
 from tf.transformations import quaternion_from_euler
-import cv2
-from cv_bridge import CvBridge, CvBridgeError
-import math
+from .door_open_task_env import DoorOpenTaskEnv
+from agents.dqn_conv import DQNAgent
+import sys
+import os
+import tensorflow as tf
 
 #
 class DoorPullTaskEnv(DoorOpenTaskEnv):
@@ -74,38 +69,39 @@ class DoorPullTaskEnv(DoorOpenTaskEnv):
 class DoorPushTaskEnv(DoorOpenTaskEnv):
     def __init__(self,resolution=(64,64),noise=0.0):
         super(DoorPushTaskEnv, self).__init__(resolution,noise)
+        self.robot_x = -0.5
 
     def _set_init(self):
-      self.driver.stop()
-      self._reset_mobile_robot(-1.0,0.5,0.075,0)
-      self._wait_door_closed()
-      self.step_cnt = 0
-      self.success = False
+        self.driver.stop()
+        self._reset_mobile_robot(-0.5,0.7,0.075,0)
+        self._wait_door_closed()
+        self.step_cnt = 0
+        self.success = False
 
     def _take_action(self, action_idx):
-      action = self.action_space[action_idx]
-      self.driver.drive(action[0],action[1])
-      rospy.sleep(0.5)
-      self.step_cnt += 1
-      self.success = self._robot_is_in()
+        self.robot_x = self.pose_sensor.robot().position.x
+        action = self.action_space[action_idx]
+        self.driver.drive(action[0],action[1])
+        rospy.sleep(0.5)
+        self.step_cnt += 1
+        self.success = self._robot_is_in()
 
     def _is_done(self):
-      if self._door_push_failed() or self._robot_is_in():
-          return True
-      else:
-          return False
+        if self._door_push_failed() or self._robot_is_in():
+            return True
+        else:
+            return False
 
     def _compute_reward(self):
-      reward = 0
-      if self.success:
-          reward = 100
-      else:
-          reward = self.pose_sensor.robot().position.x
-
-      # try to achieve less steps
-      # penalty = 0.1
-      #print("step reward and penalty: ", reward, penalty)
-      return reward
+        reward = 0
+        if self.success:
+            reward = 100
+        else:
+            reward = self.pose_sensor.robot().position.x - self.robot_x
+        # try to achieve less steps
+        # penalty = 0.1
+        #print("step reward and penalty: ", reward, penalty)
+        return reward
 
     def _door_push_failed(self):
         if self._robot_is_out():
@@ -121,43 +117,53 @@ class DoorPushTaskEnv(DoorOpenTaskEnv):
 class DoorTraverseTaskEnv(DoorOpenTaskEnv):
     def __init__(self,resolution=(64,64),noise=0.0):
         super(DoorTraverseTaskEnv, self).__init__(resolution,noise)
+        self.robot_x = 0.61
 
     def _set_init(self):
-      self.driver.stop()
-      self._reset_mobile_robot(1.5,0.5,0.075,3.14)
-      self._wait_door_closed()
-      self._reset_mobile_robot(0.61,0.77,0.075,3.3)
-      self.step_cnt = 0
-      self._pull_door('door_open_3')
-      self.success = False
+        self.driver.stop()
+        self._reset_mobile_robot(1.5,0.5,0.075,3.14)
+        self._wait_door_closed()
+        self._reset_mobile_robot(0.61,0.77,0.075,3.3)
+        self.step_cnt = 0
+        self._pull_door('door_pull_3')
+        self.success = False
 
     def _take_action(self, action_idx):
-      action = self.action_space[action_idx]
-      self.driver.drive(action[0],action[1])
-      rospy.sleep(0.5)
-      self.step_cnt += 1
-      self.success = self._robot_is_out()
+        self.robot_x = self.pose_sensor.robot().position.x
+        action = self.action_space[action_idx]
+        self.driver.drive(action[0],action[1])
+        rospy.sleep(0.5)
+        self.step_cnt += 1
+        self.success = self._robot_is_out()
 
     def _is_done(self):
-      if self._door_open_failed() or self._robot_is_out():
-          return True
-      else:
-          return False
+        if self._door_traverse_failed() or self._robot_is_out():
+            return True
+        else:
+            return False
 
     def _compute_reward(self):
-      reward = 0
-      if self.success:
-          reward = 100
-      else:
-          reward = -self.pose_sensor.robot().position.x
+        reward = 0
+        if self.success:
+            reward = 100
+        else:
+            reward = -(self.pose_sensor.robot().position.x - self.robot_x)
 
-      # try to achieve less steps
-      # penalty = 0.1
-      #print("step reward and penalty: ", reward, penalty)
-      return reward
+            # try to achieve less steps
+        # penalty = 0.1
+        #print("step reward and penalty: ", reward, penalty)
+        return reward
+
+    def _door_traverse_failed(self):
+        if not self._robot_is_out():
+            campose_r, campose_a = self._camera_position()
+            doorpose_r, doorpos_a = self._door_position()
+            if campose_r > 1.1*doorpose_r or campose_a > 1.1*doorpos_a:
+                return True
+        return False
 
     def _pull_door(self, dqn_model):
-        agent = DQNAgent(name='door_pull',dim_img=(64,64,3),dim_act=act_dim)
+        agent = DQNAgent(name="door_pull",dim_img=(64,64,3),dim_act=self.action_dimension())
         model_path = os.path.join(sys.path[0], 'trained_models', dqn_model, 'models')
         agent.dqn_active = tf.keras.models.load_model(model_path)
         agent.epsilon = 0.0 # determinitic action without random choice
