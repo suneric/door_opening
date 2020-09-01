@@ -118,6 +118,14 @@ class DoorTraverseTaskEnv(DoorOpenTaskEnv):
     def __init__(self,resolution=(64,64),noise=0.0):
         super(DoorTraverseTaskEnv, self).__init__(resolution,noise)
         self.robot_x = 0.61
+        self.door_pull_agent = self._load_door_pull_agent('door_pull_3')
+
+    def _load_door_pull_agent(self,dqn_model):
+        agent = DQNAgent(name="door_pull",dim_img=(64,64,3),dim_act=self.action_dimension())
+        model_path = os.path.join(sys.path[0], 'trained_models', dqn_model, 'models')
+        agent.dqn_active = tf.keras.models.load_model(model_path)
+        agent.epsilon = 0.0 # determinitic action without random choice
+        return agent
 
     def _set_init(self):
         self.driver.stop()
@@ -125,7 +133,7 @@ class DoorTraverseTaskEnv(DoorOpenTaskEnv):
         self._wait_door_closed()
         self._reset_mobile_robot(0.61,0.77,0.075,3.3)
         self.step_cnt = 0
-        self._pull_door('door_pull_3')
+        self._pull_door()
         self.success = False
 
     def _take_action(self, action_idx):
@@ -162,16 +170,12 @@ class DoorTraverseTaskEnv(DoorOpenTaskEnv):
                 return True
         return False
 
-    def _pull_door(self, dqn_model):
-        agent = DQNAgent(name="door_pull",dim_img=(64,64,3),dim_act=self.action_dimension())
-        model_path = os.path.join(sys.path[0], 'trained_models', dqn_model, 'models')
-        agent.dqn_active = tf.keras.models.load_model(model_path)
-        agent.epsilon = 0.0 # determinitic action without random choice
+    def _pull_door(self):
         obs = self._get_observation()
         img = obs.copy()
         step_cnt = 0
         while not self._door_is_open():
-            act_idx = agent.epsilon_greedy(img)
+            act_idx = self.door_pull_agent.epsilon_greedy(img)
             self.gazebo.unpauseSim()
             action = self.action_space[act_idx]
             self.driver.drive(action[0],action[1])

@@ -119,7 +119,7 @@ class DQNAgent:
         self.fit_cntr = 0
         # build DQN model
         self.dqn_active = dqn(dim_img=dim_img, dim_act=dim_act)
-        # self.dqn_active.summary()
+        self.dqn_active.summary()
         self.dqn_stable = tf.keras.models.clone_model(self.dqn_active)
         # build replay buffer
         self.replay_buffer = ReplayBuffer(buf_size=buffer_size, dim_img=dim_img)
