@@ -4,12 +4,13 @@ from __future__ import absolute_import, division, print_function
 
 import numpy as np
 import rospy
-from tf.transformations import quaternion_from_euler
+from tf.transformations import quaternion_from_euler, euler_from_matrix
 from .door_open_task_env import DoorOpenTaskEnv
 from agents.dqn_conv import DQNAgent
 import sys
 import os
 import tensorflow as tf
+from math import *
 
 #
 class DoorPullTaskEnv(DoorOpenTaskEnv):
@@ -21,9 +22,29 @@ class DoorPullTaskEnv(DoorOpenTaskEnv):
       self.driver.stop()
       self._reset_mobile_robot(1.5,0.5,0.075,3.14)
       self._wait_door_closed()
+      # self._random_init_mobile_robot()
       self._reset_mobile_robot(0.61,0.77,0.075,3.3)
       self.step_cnt = 0
       self.success = False
+
+    # def _random_init_mobile_robot(self):
+    #     theta = np.random.uniform()+pi
+    #     camera_pose = np.array([[cos(theta),sin(theta),0,0.01],
+    #                             [-sin(theta),cos(theta),0,0.9144],
+    #                             [0,0,1,0.075],
+    #                             [0,0,0,1]])
+    #     mat = np.array([[1,0,0,0.5],
+    #                     [0,1,0,-0.25],
+    #                     [0,0,1,0],
+    #                     [0,0,0,1]])
+    #     R = np.dot(camera_pose,np.linalg.inv(mat));
+    #     euler = euler_from_matrix(R[0:3,0:3], 'rxyz')
+    #     robot_x = R[0,3]
+    #     robot_y = R[1,3]
+    #     robot_z = R[2,3]
+    #     yaw = euler[2]
+    #     print(theta,yaw)
+    #     self._reset_mobile_robot(robot_x,robot_y,robot_z,yaw)
 
     def _take_action(self, action_idx):
       _,self.door_angle = self._door_position()
