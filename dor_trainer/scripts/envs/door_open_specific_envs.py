@@ -118,10 +118,10 @@ class DoorTraverseTaskEnv(DoorOpenTaskEnv):
     def __init__(self,resolution=(64,64),noise=0.0):
         super(DoorTraverseTaskEnv, self).__init__(resolution,noise)
         self.robot_x = 0.61
-        self.door_pull_agent = self._load_door_pull_agent('door_pull_3')
+        self.door_pull_agent = self._load_door_pull_agent('door_pull_3',5)
 
-    def _load_door_pull_agent(self,dqn_model):
-        agent = DQNAgent(name="door_pull",dim_img=(64,64,3),dim_act=self.action_dimension())
+    def _load_door_pull_agent(self,dqn_model,act_dim):
+        agent = DQNAgent(name="door_pull",dim_img=(64,64,3),dim_act=act_dim)
         model_path = os.path.join(sys.path[0], 'trained_models', dqn_model, 'models')
         agent.dqn_active = tf.keras.models.load_model(model_path)
         agent.epsilon = 0.0 # determinitic action without random choice
