@@ -6,17 +6,18 @@ from cv_bridge import CvBridge, CvBridgeError
 from sensor_msgs.msg import Image, CameraInfo, PointCloud2
 
 class FrontCam:
-    def __init__(self):
+    def __init__(self,cam_name):
         self.bridge=CvBridge()
         # camera information
         self.cameraInfoUpdate = False
         # ros-realsense
-        self.caminfo_sub = rospy.Subscriber('/front_cam/camera_info', CameraInfo, self._caminfo_callback)
-        self.color_sub = rospy.Subscriber('/front_cam/image_raw', Image, self._color_callback)
+        self.caminfo_sub = rospy.Subscriber('/'+cam_name+'/camera_info', CameraInfo, self._caminfo_callback)
+        self.color_sub = rospy.Subscriber('/'+cam_name+'/image_raw', Image, self._color_callback)
         # data
         self.cv_color = []
         self.width = 1024
         self.height = 720
+        self.name = cam_name
 
     def ready(self):
         return self.cameraInfoUpdate and len(self.cv_color) > 0
@@ -43,9 +44,9 @@ class FrontCam:
     def draw_image(self):
         img = sensor.color_image()
         img = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
-        cv2.namedWindow("door opening")
+        cv2.namedWindow(self.name)
         img = cv2.resize(img, None, fx=1.0, fy=1.0)
-        cv2.imshow('door opening',img)
+        cv2.imshow(self.name,img)
         cv2.waitKey(3)
 
 if __name__ == '__main__':

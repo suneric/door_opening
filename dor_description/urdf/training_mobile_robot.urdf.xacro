@@ -14,5 +14,6 @@
       <xacro:property name="location_y" value="0" />
       <xacro:property name="camera_width" value="600" />
       <xacro:property name="camera_height" value="600" />
+      <xacro:property name="camera_name" value="cam_up"/>
     </xacro:camera_macro>
 </robot>

@@ -1,0 +1,80 @@
+<?xml version="1.0"?>
+
+<robot name="mobile_robot" xmlns:xacro="https://www.ros.org/wiki/xacro" >
+    <xacro:property name="cam_support_x" value="0.05" />
+    <xacro:property name="cam_support_y" value="0.05" />
+    <xacro:property name="cam_support_z" value="0.2" />
+    <xacro:property name="cam_support_m" value="0.5" />
+
+    <xacro:include filename="$(find dor_description)/urdf/fourwheeler_base.urdf.xacro" />
+    <xacro:fourwheeler_base_macro/>
+    <!--mobile base 50 cm x 50 cm square-->
+    <xacro:include filename="$(find dor_description)/urdf/camera.urdf.xacro"/>
+    <xacro:camera_macro parent="link_tip">
+      <xacro:property name="location_x" value="0.02" />
+      <xacro:property name="location_y" value="0.0" />
+      <xacro:property name="location_z" value="0.02" />
+      <xacro:property name="location_r" value="0" />
+      <xacro:property name="location_p" value="-1.57" />
+      <xacro:property name="location_y" value="0" />
+      <xacro:property name="camera_width" value="600" />
+      <xacro:property name="camera_height" value="600" />
+      <xacro:property name="camera_name" value="cam_up"/>
+    </xacro:camera_macro>
+
+    <!--camera support-->
+    <joint name="joint_cam_support" type="fixed">
+      <origin xyz="0 0 0.075" rpy="0 0 0"/>
+      <parent link="link_base"/>
+      <child link="link_cam_support"/>
+    </joint>
+    <link name="link_cam_support">
+      <visual>
+        <origin xyz="0 0 ${cam_support_z/2}" rpy="0 0 0" />
+        <geometry>
+          <box size="${cam_support_x} ${cam_support_y} ${cam_support_z}"/>
+        </geometry>
+      </visual>
+      <collision>
+        <origin xyz="0 0 ${cam_support_z/2}" rpy="0 0 0" />
+        <geometry>
+          <box size="${cam_support_x} ${cam_support_y} ${cam_support_z}"/>
+        </geometry>
+      </collision>
+      <inertial>
+        <mass value="${cam_support_m}"/>
+        <origin rpy="0 0 0" xyz="0 0 0"/>
+        <inertia ixx="${1/12*cam_support_m*(cam_support_y*cam_support_y+cam_support_z*cam_support_z)}" ixy="0" ixz="0" iyy="${1/12*cam_support_m*(cam_support_z*cam_support_z+cam_support_x*cam_support_x)}" iyz="0" izz="${1/12*cam_support_m*(cam_support_x*cam_support_x+cam_support_y*cam_support_y)}"/>
+      </inertial>
+    </link>
+
+    <!--mobile base 50 cm x 50 cm square-->
+    <xacro:include filename="$(find dor_description)/urdf/camera.urdf.xacro"/>
+    <xacro:camera_macro parent="link_cam_support">
+      <xacro:property name="location_x" value="0.025" />
+      <xacro:property name="location_y" value="0.0" />
+      <xacro:property name="location_z" value="0.2" />
+      <xacro:property name="location_r" value="0" />
+      <xacro:property name="location_p" value="0" />
+      <xacro:property name="location_y" value="0" />
+      <xacro:property name="camera_width" value="600" />
+      <xacro:property name="camera_height" value="600" />
+      <xacro:property name="camera_name" value="cam_front"/>
+    </xacro:camera_macro>
+
+    <!--mobile base 50 cm x 50 cm square-->
+    <xacro:include filename="$(find dor_description)/urdf/camera.urdf.xacro"/>
+    <xacro:camera_macro parent="link_cam_support">
+      <xacro:property name="location_x" value="-0.025" />
+      <xacro:property name="location_y" value="0.0" />
+      <xacro:property name="location_z" value="0.2" />
+      <xacro:property name="location_r" value="3.14" />
+      <xacro:property name="location_p" value="3.14" />
+      <xacro:property name="location_y" value="0" />
+      <xacro:property name="camera_width" value="600" />
+      <xacro:property name="camera_height" value="600" />
+      <xacro:property name="camera_name" value="cam_back"/>
+    </xacro:camera_macro>
+
+
+</robot>

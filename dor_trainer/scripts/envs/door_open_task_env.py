@@ -25,35 +25,86 @@ class CameraSensor():
         self.resolution = resolution
         self.noise = noise
         self.bridge = CvBridge()
-        self.image_sub = rospy.Subscriber('/front_cam/image_raw', Image, self._image_cb)
-        self.rgb_image = None
+        self.image_up_sub = rospy.Subscriber('/cam_up/image_raw', Image, self._image_up_cb)
+        self.image_front_sub = rospy.Subscriber('/cam_front/image_raw', Image, self._image_front_cb)
+        self.image_back_sub = rospy.Subscriber('/cam_back/image_raw', Image, self._image_back_cb)
+        self.rgb_image_up = None
+        self.rgb_image_front = None
+        self.rgb_image_back = None
 
-    def _image_cb(self,data):
+    def _image_up_cb(self,data):
         try:
-            self.rgb_image = self.bridge.imgmsg_to_cv2(data, "bgr8")
+            self.rgb_image_up = self.bridge.imgmsg_to_cv2(data, "bgr8")
             # show image
-            cv2.namedWindow("door opening")
-            cv2.imshow('door opening',self.rgb_image)
+            # cv2.namedWindow("up_camera")
+            # cv2.imshow('up_camera',self.rgb_image_up)
+            # cv2.waitKey(1)
+        except CvBridgeError as e:
+            print(e)
+
+    def _image_front_cb(self,data):
+        try:
+            self.rgb_image_front = self.bridge.imgmsg_to_cv2(data, "bgr8")
+            # show image
+            cv2.namedWindow("front_camera")
+            cv2.imshow('front_camera',self.rgb_image_front)
             cv2.waitKey(1)
         except CvBridgeError as e:
             print(e)
 
+    def _image_back_cb(self,data):
+        try:
+            self.rgb_image_back = self.bridge.imgmsg_to_cv2(data, "bgr8")
+            # show image
+            # cv2.namedWindow("back_camera")
+            # cv2.imshow('back_camera',self.rgb_image_back)
+            # cv2.waitKey(1)
+        except CvBridgeError as e:
+            print(e)
+
     def check_camera_ready(self):
-        self.rgb_image = None
+        self.rgb_image_up = None
+        self.rgb_image_front = None
+        self.rgb_image_back = None
         rospy.logdebug("Waiting for /front_cam/image_raw to be READY...")
-        while self.rgb_image is None and not rospy.is_shutdown():
+        while self.rgb_image_up is None and not rospy.is_shutdown():
             try:
-                data = rospy.wait_for_message("/front_cam/image_raw", Image, timeout=5.0)
-                self.rgb_image = self.bridge.imgmsg_to_cv2(data, "bgr8")
-                rospy.logdebug("Current /front_cam/image_raw READY=>")
+                data = rospy.wait_for_message("/cam_up/image_raw", Image, timeout=5.0)
+                self.rgb_image_up = self.bridge.imgmsg_to_cv2(data, "bgr8")
+                rospy.logdebug("Current /cam_up/image_raw READY=>")
             except:
-                rospy.logerr("Current /front_cam/image_raw not ready yet, retrying for getting /front_cam/image_raw")
+                rospy.logerr("Current /cam_up/image_raw not ready yet, retrying for getting /cam_up/image_raw")
+        while self.rgb_image_front is None and not rospy.is_shutdown():
+            try:
+                data = rospy.wait_for_message("/cam_front/image_raw", Image, timeout=5.0)
+                self.rgb_image_front = self.bridge.imgmsg_to_cv2(data, "bgr8")
+                rospy.logdebug("Current /cam_front/image_raw READY=>")
+            except:
+                rospy.logerr("Current /cam_front/image_raw not ready yet, retrying for getting /cam_front/image_raw")
+
+        while self.rgb_image_back is None and not rospy.is_shutdown():
+            try:
+                data = rospy.wait_for_message("/cam_back/image_raw", Image, timeout=5.0)
+                self.rgb_image_back = self.bridge.imgmsg_to_cv2(data, "bgr8")
+                rospy.logdebug("Current /cam_back/image_raw READY=>")
+            except:
+                rospy.logerr("Current /cam_back/image_raw not ready yet, retrying for getting /cam_back/image_raw")
 
     def image_arr(self):
-        img = cv2.resize(self.rgb_image, self.resolution)
-        img_arr = np.array(img)/255 - 0.5 # normalize the image for easier training
-        img_arr = img_arr.reshape((64,64,3))
+        # img_up = cv2.resize(self.rgb_image_up, self.resolution)
+        # img_up_arr = np.array(img_up)/255 - 0.5 # normalize the image for easier training
+        # img_up_arr = img_up_arr.reshape((64,64,3))
+        img_front = cv2.resize(self.rgb_image_front, self.resolution)
+        img_front_arr = np.array(img_front)/255 - 0.5 # normalize the image for easier trainings
+        img_front_arr = img_front_arr.reshape((64,64,3))
+        # img_back = cv2.resize(self.rgb_image_back, self.resolution)
+        # img_back_arr = np.array(img_back)/255 - 0.5 # normalize the image for easier training
+        # img_back_arr = img_back_arr.reshape((64,64,3))
+        # img_arr = np.append(img_up_arr,img_front_arr,img_back_arr,axis=2)
+        # #img_arr = img_arr.reshape((64,64,9))
+        # print(img_arr)
         # add noise
+        img_arr = img_front_arr
         return img_arr
 
 """

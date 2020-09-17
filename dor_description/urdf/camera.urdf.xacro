@@ -12,14 +12,15 @@
 
     <xacro:property name="camera_link" value="0.02" />
 
+    <xacro:property name="camera_name" value="front_cam" />
     <xacro:macro name="camera_macro" params="parent">
     <!--movable camera-->
-    <joint name="camera_joint" type="fixed">
+    <joint name="camera_joint_${camera_name}" type="fixed">
       <origin xyz="${location_x} ${location_y} ${location_z}" rpy="${location_r} ${location_p} ${location_y}"/>
       <parent link="${parent}"/>
-      <child link="camera_link"/>
+      <child link="camera_link_${camera_name}"/>
     </joint>
-    <link name="camera_link">
+    <link name="camera_link_${camera_name}">
       <collision>
         <origin xyz="0 0 ${camera_link/2}" rpy="0 0 0"/>
         <geometry>
@@ -39,9 +40,9 @@
       </inertial>
     </link>
 
-    <gazebo reference="camera_link">
+    <gazebo reference="camera_link_${camera_name}">
       <material>Gazebo/Red</material>
-      <sensor type="camera" name="camera_front">
+      <sensor type="camera" name="${camera_name}">
         <update_rate>30.0</update_rate>
         <camera name="head">
           <horizontal_fov>1.3962634</horizontal_fov>
@@ -63,10 +64,10 @@
         <plugin name="camera_controller" filename="libgazebo_ros_camera.so">
           <alwaysOn>true</alwaysOn>
           <updateRate>0.0</updateRate>
-          <cameraName>front_cam</cameraName>
+          <cameraName>${camera_name}</cameraName>
           <imageTopicName>image_raw</imageTopicName>
           <cameraInfoTopicName>camera_info</cameraInfoTopicName>
-          <frameName>camera_link</frameName>
+          <frameName>${camera_name}</frameName>
           <hackBaseline>0.07</hackBaseline>
           <distortionK1>0.0</distortionK1>
           <distortionK2>0.0</distortionK2>

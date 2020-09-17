@@ -16,6 +16,7 @@
     <!-- mounting hole to depth frame, Intel_RealSense_D400_Family_Datasheet_Jan2019.pdf, page 66 -->
     <xacro:property name="realsense_d435_case_offset_y" value="-0.0175"/>
     <xacro:property name="realsense_d435_case_offset_z" value="0.0"/>
+    <xacro:property name="topic" value="rs435">
 
     <xacro:macro name="realsense_macro" params="parent">
       <!--camera-->
@@ -67,7 +68,7 @@
             </clip>
           </camera>
           <plugin name="rs435_camera_plugin" filename="libgazebo_ros_openni_kinect.so">
-            <cameraName>rs435</cameraName>
+            <cameraName>${topic}</cameraName>
             <imageTopicName>color/image_raw</imageTopicName>
             <cameraInfoTopicName>color/camera_info</cameraInfoTopicName>
             <depthImageTopicName>depth/image_raw</depthImageTopicName>
