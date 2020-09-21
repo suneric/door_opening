@@ -21,90 +21,35 @@ import math
 CameraSensor
 """
 class CameraSensor():
-    def __init__(self, resolution=(64,64), noise=0.0):
+    def __init__(self, resolution=(64,64), topic='/cam_front/image_raw', noise=0.0):
         self.resolution = resolution
+        self.topic = topic
         self.noise = noise
         self.bridge = CvBridge()
-        self.image_up_sub = rospy.Subscriber('/cam_up/image_raw', Image, self._image_up_cb)
-        self.image_front_sub = rospy.Subscriber('/cam_front/image_raw', Image, self._image_front_cb)
-        self.image_back_sub = rospy.Subscriber('/cam_back/image_raw', Image, self._image_back_cb)
-        self.rgb_image_up = None
-        self.rgb_image_front = None
-        self.rgb_image_back = None
+        self.image_sub = rospy.Subscriber(self.topic, Image, self._image_cb)
+        self.rgb_image = None
 
-    def _image_up_cb(self,data):
+    def _image_cb(self,data):
         try:
-            self.rgb_image_up = self.bridge.imgmsg_to_cv2(data, "bgr8")
-            # show image
-            # cv2.namedWindow("up_camera")
-            # cv2.imshow('up_camera',self.rgb_image_up)
-            # cv2.waitKey(1)
-        except CvBridgeError as e:
-            print(e)
-
-    def _image_front_cb(self,data):
-        try:
-            self.rgb_image_front = self.bridge.imgmsg_to_cv2(data, "bgr8")
-            # show image
-            cv2.namedWindow("front_camera")
-            cv2.imshow('front_camera',self.rgb_image_front)
-            cv2.waitKey(1)
-        except CvBridgeError as e:
-            print(e)
-
-    def _image_back_cb(self,data):
-        try:
-            self.rgb_image_back = self.bridge.imgmsg_to_cv2(data, "bgr8")
-            # show image
-            # cv2.namedWindow("back_camera")
-            # cv2.imshow('back_camera',self.rgb_image_back)
-            # cv2.waitKey(1)
+            self.rgb_image = self.bridge.imgmsg_to_cv2(data, "bgr8")
         except CvBridgeError as e:
             print(e)
 
     def check_camera_ready(self):
-        self.rgb_image_up = None
-        self.rgb_image_front = None
-        self.rgb_image_back = None
-        rospy.logdebug("Waiting for /front_cam/image_raw to be READY...")
-        while self.rgb_image_up is None and not rospy.is_shutdown():
+        self.rgb_image = None
+        while self.rgb_image is None and not rospy.is_shutdown():
             try:
-                data = rospy.wait_for_message("/cam_up/image_raw", Image, timeout=5.0)
-                self.rgb_image_up = self.bridge.imgmsg_to_cv2(data, "bgr8")
-                rospy.logdebug("Current /cam_up/image_raw READY=>")
+                data = rospy.wait_for_message(self.topic, Image, timeout=5.0)
+                self.rgb_image = self.bridge.imgmsg_to_cv2(data, "bgr8")
+                rospy.logdebug("Current image READY=>")
             except:
-                rospy.logerr("Current /cam_up/image_raw not ready yet, retrying for getting /cam_up/image_raw")
-        while self.rgb_image_front is None and not rospy.is_shutdown():
-            try:
-                data = rospy.wait_for_message("/cam_front/image_raw", Image, timeout=5.0)
-                self.rgb_image_front = self.bridge.imgmsg_to_cv2(data, "bgr8")
-                rospy.logdebug("Current /cam_front/image_raw READY=>")
-            except:
-                rospy.logerr("Current /cam_front/image_raw not ready yet, retrying for getting /cam_front/image_raw")
-
-        while self.rgb_image_back is None and not rospy.is_shutdown():
-            try:
-                data = rospy.wait_for_message("/cam_back/image_raw", Image, timeout=5.0)
-                self.rgb_image_back = self.bridge.imgmsg_to_cv2(data, "bgr8")
-                rospy.logdebug("Current /cam_back/image_raw READY=>")
-            except:
-                rospy.logerr("Current /cam_back/image_raw not ready yet, retrying for getting /cam_back/image_raw")
+                rospy.logerr("Current image not ready yet, retrying for getting image")
 
     def image_arr(self):
-        # img_up = cv2.resize(self.rgb_image_up, self.resolution)
-        # img_up_arr = np.array(img_up)/255 - 0.5 # normalize the image for easier training
-        # img_up_arr = img_up_arr.reshape((64,64,3))
-        img_front = cv2.resize(self.rgb_image_front, self.resolution)
-        img_front_arr = np.array(img_front)/255 - 0.5 # normalize the image for easier trainings
-        img_front_arr = img_front_arr.reshape((64,64,3))
-        # img_back = cv2.resize(self.rgb_image_back, self.resolution)
-        # img_back_arr = np.array(img_back)/255 - 0.5 # normalize the image for easier training
-        # img_back_arr = img_back_arr.reshape((64,64,3))
-        # img_arr = np.append(img_up_arr,img_front_arr,img_back_arr,axis=2)
-        # #img_arr = img_arr.reshape((64,64,9))
-        # print(img_arr)
-        # add noise
-        img_arr = img_front_arr
+        img = cv2.resize(self.rgb_image, self.resolution)
+        # normalize the image for easier training
+        img_arr = np.array(img)/255 - 0.5
+        img_arr = img_arr.reshape((64,64,3))
         return img_arr
 
 """
@@ -216,7 +161,10 @@ class DoorOpenTaskEnv(GymGazeboEnv):
     rospy.logdebug("Start DoorOpenTaskEnv INIT...")
     self.gazebo.unpauseSim()
 
-    self.camera = CameraSensor(resolution,noise)
+    self.front_camera = CameraSensor(resolution,'/cam_front/image_raw',noise)
+    self.back_camera = CameraSensor(resolution,'/cam_back/image_raw',noise)
+    self.up_camera = CameraSensor(resolution,'/cam_up/image_raw',noise)
+
     self.driver = RobotDriver(noise)
     self.pose_sensor = PoseSensor(noise)
 
@@ -229,7 +177,6 @@ class DoorOpenTaskEnv(GymGazeboEnv):
 
   def action_dimension(self):
       dim = self.action_space.shape
-      # print("action dimension: ", dim[0])
       return dim[0]
 
   def _check_all_systems_ready(self):
@@ -241,7 +188,9 @@ class DoorOpenTaskEnv(GymGazeboEnv):
     self._check_publisher_connection()
 
   def _check_all_sensors_ready(self):
-    self.camera.check_camera_ready()
+    self.front_camera.check_camera_ready()
+    self.back_camera.check_camera_ready()
+    self.up_camera.check_camera_ready()
     self.pose_sensor.check_sensor_ready()
     rospy.logdebug("All Sensors READY")
 
@@ -250,8 +199,23 @@ class DoorOpenTaskEnv(GymGazeboEnv):
     rospy.logdebug("All Publishers READY")
 
   def _get_observation(self):
-    obs = self.camera.image_arr()
+    self._display_images()
+    img_front = self.front_camera.image_arr()
+    img_back = self.back_camera.image_arr()
+    img_up = self.up_camera.image_arr()
+    # (64x64x9) image
+    obs = np.concatenate((img_front,img_back,img_up),axis=2)
     return obs
+
+  def _display_images(self):
+      front = self.front_camera.rgb_image
+      back = self.back_camera.rgb_image
+      up = self.up_camera.rgb_image
+      img = np.concatenate((front,back,up),axis=1)
+      cv2.namedWindow("front-back-up")
+      img = cv2.resize(img, None, fx=0.5, fy=0.5)
+      cv2.imshow('front-back-up',img)
+      cv2.waitKey(3)
 
   def _post_information(self):
     return self.pose_sensor.robot()
@@ -288,7 +252,7 @@ class DoorOpenTaskEnv(GymGazeboEnv):
   def _wait_door_closed(self):
       door_r, door_a = self._door_position()
       while door_a > 0.11:
-          rospy.sleep(1)
+          rospy.sleep(0.5)
           door_r, door_a = self._door_position()
 
   def _door_is_open(self):

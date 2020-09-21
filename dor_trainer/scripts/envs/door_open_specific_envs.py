@@ -69,10 +69,10 @@ class DoorPullTaskEnv(DoorOpenTaskEnv):
           delta_a = door_a-self.door_angle
           reward = delta_a*10
 
-      # try to achieve less steps
-      penalty = 0.1
+      # # try to achieve less steps
+      # penalty = 0.1
       #print("step reward and penalty: ", reward, penalty)
-      return reward-penalty
+      return reward
 
     # check the position of camera
     # if it is in the door block, still trying
@@ -142,7 +142,7 @@ class DoorTraverseTaskEnv(DoorOpenTaskEnv):
         self.door_pull_agent = self._load_door_pull_agent('door_pull_3',5)
 
     def _load_door_pull_agent(self,dqn_model,act_dim):
-        agent = DQNAgent(name="door_pull",dim_img=(64,64,3),dim_act=act_dim)
+        agent = DQNAgent(name="door_pull",dim_img=(64,64,9),dim_act=act_dim)
         model_path = os.path.join(sys.path[0], 'trained_models', dqn_model, 'models')
         agent.dqn_active = tf.keras.models.load_model(model_path)
         agent.epsilon = 0.0 # determinitic action without random choice

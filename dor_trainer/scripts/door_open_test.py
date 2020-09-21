@@ -24,7 +24,7 @@ from envs.door_open_specific_envs import DoorPullTaskEnv, DoorPushTaskEnv, DoorT
 def dqn_pull_test(episode, model_name,act_dim):
     env = DoorPullTaskEnv(resolution=(64,64))
     # act_dim = env.action_dimension()
-    agent = DQNAgent(name='door_pull',dim_img=(64,64,3),dim_act=act_dim)
+    agent = DQNAgent(name='door_pull',dim_img=(64,64,9),dim_act=act_dim)
     model_path = os.path.join(sys.path[0], 'trained_models', model_name, 'models')
     agent.dqn_active = tf.keras.models.load_model(model_path)
 
@@ -74,7 +74,7 @@ def dqn_pull_test(episode, model_name,act_dim):
 def dqn_push_test(episode, model_name):
     env = DoorPushTaskEnv(resolution=(64,64))
     act_dim = env.action_dimension()
-    agent = DQNAgent(name='door_push',dim_img=(64,64,3),dim_act=act_dim)
+    agent = DQNAgent(name='door_push',dim_img=(64,64,9),dim_act=act_dim)
     model_path = os.path.join(sys.path[0], 'saved_models', model_name, 'models')
     agent.dqn_active = tf.keras.models.load_model(model_path)
 
@@ -117,7 +117,7 @@ def dqn_push_test(episode, model_name):
 def dqn_traverse_test(episode, model_name):
     env = DoorTraverseTaskEnv(resolution=(64,64))
     act_dim = env.action_dimension()
-    agent = DQNAgent(name='door_traverse',dim_img=(64,64,3),dim_act=act_dim)
+    agent = DQNAgent(name='door_traverse',dim_img=(64,64,9),dim_act=act_dim)
     model_path = os.path.join(sys.path[0], 'saved_models', model_name, 'models')
     agent.dqn_active = tf.keras.models.load_model(model_path)
 

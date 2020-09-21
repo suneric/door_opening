@@ -32,7 +32,7 @@ if __name__=='__main__':
     sedimentary_returns = []
     ep_rew = 0
     # instantiate agent
-    agent_p = DQNAgent(name='door_traverse',dim_img=(64,64,3),dim_act=act_dim)
+    agent_p = DQNAgent(name='door_traverse',dim_img=(64,64,9),dim_act=act_dim)
     model_path = os.path.join(sys.path[0], 'saved_models', agent_p.name, 'models')
 
     # use tensorboard
