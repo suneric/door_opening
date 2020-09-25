@@ -28,10 +28,12 @@ class CameraSensor():
         self.bridge = CvBridge()
         self.image_sub = rospy.Subscriber(self.topic, Image, self._image_cb)
         self.rgb_image = None
+        self.grey_image = None
 
     def _image_cb(self,data):
         try:
             self.rgb_image = self.bridge.imgmsg_to_cv2(data, "bgr8")
+            self.grey_image = cv2.cvtColor(self.rgb_image, cv2.COLOR_BGR2GRAY)
         except CvBridgeError as e:
             print(e)
 
@@ -50,6 +52,13 @@ class CameraSensor():
         # normalize the image for easier training
         img_arr = np.array(img)/255 - 0.5
         img_arr = img_arr.reshape((64,64,3))
+        return img_arr
+
+    def grey_arr(self):
+        img = cv2.resize(self.grey_image, self.resolution)
+        # normalize the image for easier training
+        img_arr = np.array(img)/255 - 0.5
+        img_arr = img_arr.reshape((64,64,1))
         return img_arr
 
 """
@@ -200,11 +209,16 @@ class DoorOpenTaskEnv(GymGazeboEnv):
 
   def _get_observation(self):
     self._display_images()
-    img_front = self.front_camera.image_arr()
-    img_back = self.back_camera.image_arr()
-    img_up = self.up_camera.image_arr()
+    # img_front = self.front_camera.image_arr()
+    # img_back = self.back_camera.image_arr()
+    # img_up = self.up_camera.image_arr()
     # (64x64x9) image
+    img_front = self.front_camera.grey_arr()
+    img_back = self.back_camera.grey_arr()
+    img_up = self.up_camera.grey_arr()
+    # (64x64x3)
     obs = np.concatenate((img_front,img_back,img_up),axis=2)
+    # print(obs.shape)
     return obs
 
   def _display_images(self):
