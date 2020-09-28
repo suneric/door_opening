@@ -9,7 +9,7 @@ import logging
 logging.basicConfig(format='%(asctime)s %(message)s',level=logging.INFO)
 
 from agents.dqn_conv import DQNAgent
-from envs.door_open_specific_envs import DoorPushTaskEnv
+from envs.door_open_specific_envs import DoorPushTaskEnv, ModelSaver
 import rospy
 import tensorflow as tf
 
@@ -22,7 +22,7 @@ if __name__=='__main__':
     env = DoorPushTaskEnv(resolution=(64,64))
     act_dim = env.action_dimension()
     # parameter
-    num_episodes = 10000
+    num_episodes = 8000
     num_steps = env.max_episode_steps
     train_freq = 80
     # variables
@@ -39,6 +39,8 @@ if __name__=='__main__':
     train_loss = tf.keras.metrics.Mean('train_loss', dtype=tf.float32)
     summary_writer = tf.summary.create_file_writer(model_path)
     summary_writer.set_as_default()
+
+    model_saver = ModelSaver(500)
 
     start_time = time.time()
     for ep in range(num_episodes):
@@ -87,14 +89,5 @@ if __name__=='__main__':
         )
 
         train_loss.reset_states()
-
-    # plot averaged returns
-    # fig, ax = plt.subplots(figsize=(8, 6))
-    # fig.suptitle('Averaged Returns')
-    # ax.plot(sedimentary_returns)
-    # plt.show()
-
-    # save model
-    if not os.path.exists(model_path):
-        os.makedirs(os.path.dirname(model_path))
-    agent_p.dqn_active.save(model_path)
+        # save model
+        model_saver.save(ep,model_path,agent_p.dqn_active)

@@ -12,6 +12,18 @@ import os
 import tensorflow as tf
 from math import *
 
+class ModelSaver:
+    def __init__(self,freq):
+        self.save_freq = freq
+
+    def save(self,ep,dir,net):
+        if not (ep+1)%self.save_freq:
+            model_path = os.path.join(dir, str(ep))
+            if not os.path.exists(os.path.dirname(model_path)):
+                os.mkdirs(os.path.dirname(model_path))
+            net.save(model_path)
+            print("save trained model:", model_path)
+
 #
 class DoorPullTaskEnv(DoorOpenTaskEnv):
     def __init__(self,resolution=(64,64),noise=0.0):
