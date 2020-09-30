@@ -21,11 +21,11 @@ import argparse
 from agents.dqn_conv import DQNAgent
 from envs.door_open_specific_envs import DoorPullTaskEnv, DoorPushTaskEnv, DoorTraverseTaskEnv
 
-def dqn_pull_test(episode, model_name,act_dim):
+def dqn_pull_test(episode, path,model_name,act_dim):
     env = DoorPullTaskEnv(resolution=(64,64))
     # act_dim = env.action_dimension()
     agent = DQNAgent(name='door_pull',dim_img=(64,64,3),dim_act=act_dim)
-    model_path = os.path.join(sys.path[0], 'trained_models', model_name, 'models')
+    model_path = os.path.join(sys.path[0], path, model_name, 'models')
     agent.dqn_active = tf.keras.models.load_model(model_path)
 
     steps = env.max_episode_steps
@@ -66,16 +66,14 @@ def dqn_pull_test(episode, model_name,act_dim):
         if env.success:
             success_counter += 1
             success_steps.append(st)
-
-    print(success_steps)
     return success_counter, np.mean(success_steps)
 
 
-def dqn_push_test(episode, model_name):
+def dqn_push_test(episode,path, model_name):
     env = DoorPushTaskEnv(resolution=(64,64))
     act_dim = env.action_dimension()
     agent = DQNAgent(name='door_push',dim_img=(64,64,3),dim_act=act_dim)
-    model_path = os.path.join(sys.path[0], 'saved_models', model_name, 'models')
+    model_path = os.path.join(sys.path[0], path, model_name, 'models')
     agent.dqn_active = tf.keras.models.load_model(model_path)
 
     steps = env.max_episode_steps
@@ -85,6 +83,7 @@ def dqn_push_test(episode, model_name):
     sedimentary_returns = []
     ep_rew = 0
     agent.epsilon = 0.0
+    success_steps = []
     for ep in range(episode):
         obs, info = env.reset()
         ep_rew = 0
@@ -100,9 +99,6 @@ def dqn_push_test(episode, model_name):
         # log infomation for each episode
         episodic_returns.append(ep_rew)
         sedimentary_returns.append(sum(episodic_returns)/(ep+1))
-        if env.success:
-            success_counter += 1
-
         rospy.loginfo(
             "\n================\nEpisode: {} \nEpisodeLength: {} \nEpisodeTotalRewards: {} \nAveragedTotalReward: {} \nSuccess: {} \nTime: {} \n================\n".format(
                 ep+1,
@@ -113,12 +109,17 @@ def dqn_push_test(episode, model_name):
                 time.time()-start_time
             )
         )
+        if env.success:
+            success_counter += 1
+            success_steps.append(st)
 
-def dqn_traverse_test(episode, model_name):
+    return success_counter, np.mean(success_steps)
+
+def dqn_traverse_test(episode,path, model_name):
     env = DoorTraverseTaskEnv(resolution=(64,64))
     act_dim = env.action_dimension()
     agent = DQNAgent(name='door_traverse',dim_img=(64,64,3),dim_act=act_dim)
-    model_path = os.path.join(sys.path[0], 'saved_models', model_name, 'models')
+    model_path = os.path.join(sys.path[0], path, model_name, 'models')
     agent.dqn_active = tf.keras.models.load_model(model_path)
 
     steps = env.max_episode_steps
@@ -128,6 +129,7 @@ def dqn_traverse_test(episode, model_name):
     sedimentary_returns = []
     ep_rew = 0
     agent.epsilon = 0.0
+    success_steps = []
     for ep in range(episode):
         obs, info = env.reset()
         ep_rew = 0
@@ -143,8 +145,6 @@ def dqn_traverse_test(episode, model_name):
         # log infomation for each episode
         episodic_returns.append(ep_rew)
         sedimentary_returns.append(sum(episodic_returns)/(ep+1))
-        if env.success:
-            success_counter += 1
 
         rospy.loginfo(
             "\n================\nEpisode: {} \nEpisodeLength: {} \nEpisodeTotalRewards: {} \nAveragedTotalReward: {} \nSuccess: {} \nTime: {} \n================\n".format(
@@ -156,13 +156,18 @@ def dqn_traverse_test(episode, model_name):
                 time.time()-start_time
             )
         )
+        if env.success:
+            success_counter += 1
+            success_steps.append(st)
+    return success_counter, np.mean(success_steps)
 
 def get_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('--dqn', type=str, default="pull") # dgn test 1 or random test 0
-    parser.add_argument('--model', type=str, default="door_pull_0") # baseline
+    parser.add_argument('--model', type=str, default="door_pull") # baseline
     parser.add_argument('--eps', type=int, default=10) # test episode
     parser.add_argument('--dim',type=int, default=8)
+    parser.add_argument('--path',type=str, default="saved_models")
     return parser.parse_args()
 
 
@@ -172,12 +177,16 @@ if __name__ == "__main__":
     args = get_args()
     rospy.init_node('env_test', anonymous=True, log_level=rospy.INFO)
     if args.dqn == "pull":
-        success_count, average_steps = dqn_pull_test(args.eps, args.model,args.dim)
+        success_count, average_steps = dqn_pull_test(args.eps, args.path, args.model,args.dim)
         print("success", success_count,"/", args.eps)
         print("average steps", average_steps)
     elif args.dqn == "push":
-        dqn_push_test(args.eps, args.model)
+        success_count, average_steps = dqn_push_test(args.eps, args.path, args.model)
+        print("success", success_count,"/", args.eps)
+        print("average steps", average_steps)
     elif args.dqn == "traverse":
-        dqn_traverse_test(args.eps, args.model)
+        success_count, average_steps = dqn_traverse_test(args.eps, args.path, args.model)
+        print("success", success_count,"/", args.eps)
+        print("average steps", average_steps)
     else:
         print("choose task type, model name and number of test episode.")
