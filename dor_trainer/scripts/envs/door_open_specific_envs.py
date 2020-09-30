@@ -18,7 +18,7 @@ class ModelSaver:
 
     def save(self,ep,dir,net):
         if not (ep+1)%self.save_freq:
-            model_path = os.path.join(dir, str(ep))
+            model_path = os.path.join(dir, str(ep+1))
             if not os.path.exists(os.path.dirname(model_path)):
                 os.mkdirs(os.path.dirname(model_path))
             net.save(model_path)
@@ -34,29 +34,31 @@ class DoorPullTaskEnv(DoorOpenTaskEnv):
       self.driver.stop()
       self._reset_mobile_robot(1.5,0.5,0.075,3.14)
       self._wait_door_closed()
-      # self._random_init_mobile_robot()
-      self._reset_mobile_robot(0.61,0.77,0.075,3.3)
+      self._random_init_mobile_robot()
+      #self._reset_mobile_robot(0.61,0.77,0.075,3.3)
+      self.driver.stop()
       self.step_cnt = 0
       self.success = False
 
-    # def _random_init_mobile_robot(self):
-    #     theta = np.random.uniform()+pi
-    #     camera_pose = np.array([[cos(theta),sin(theta),0,0.01],
-    #                             [-sin(theta),cos(theta),0,0.9144],
-    #                             [0,0,1,0.075],
-    #                             [0,0,0,1]])
-    #     mat = np.array([[1,0,0,0.5],
-    #                     [0,1,0,-0.25],
-    #                     [0,0,1,0],
-    #                     [0,0,0,1]])
-    #     R = np.dot(camera_pose,np.linalg.inv(mat));
-    #     euler = euler_from_matrix(R[0:3,0:3], 'rxyz')
-    #     robot_x = R[0,3]
-    #     robot_y = R[1,3]
-    #     robot_z = R[2,3]
-    #     yaw = euler[2]
-    #     print(theta,yaw)
-    #     self._reset_mobile_robot(robot_x,robot_y,robot_z,yaw)
+    def _random_init_mobile_robot(self):
+        cx = 0.01*(np.random.uniform()-0.5)+0.07
+        cy = 0.01*(np.random.uniform()-0.5)+0.95
+        theta = 0.1*(np.random.uniform()-0.5)+pi
+        camera_pose = np.array([[cos(theta),sin(theta),0,cx],
+                                [-sin(theta),cos(theta),0,cy],
+                                [0,0,1,0.075],
+                                [0,0,0,1]])
+        mat = np.array([[1,0,0,0.5],
+                        [0,1,0,-0.25],
+                        [0,0,1,0],
+                        [0,0,0,1]])
+        R = np.dot(camera_pose,np.linalg.inv(mat));
+        euler = euler_from_matrix(R[0:3,0:3], 'rxyz')
+        robot_x = R[0,3]
+        robot_y = R[1,3]
+        robot_z = R[2,3]
+        yaw = euler[2]
+        self._reset_mobile_robot(robot_x,robot_y,robot_z,yaw)
 
     def _take_action(self, action_idx):
       _,self.door_angle = self._door_position()
@@ -106,10 +108,18 @@ class DoorPushTaskEnv(DoorOpenTaskEnv):
 
     def _set_init(self):
         self.driver.stop()
-        self._reset_mobile_robot(-0.5,0.7,0.075,0)
+        self._random_init_mobile_robot()
+        #self._reset_mobile_robot(-0.5,0.7,0.075,0)
         self._wait_door_closed()
         self.step_cnt = 0
         self.success = False
+
+    def _random_init_mobile_robot(self):
+        robot_x = 0.15*(np.random.uniform()-0.5)-0.7
+        robot_y = 0.25*(np.random.uniform()-0.5)+0.5
+        robot_z = 0.075
+        yaw = np.random.uniform()-0.5
+        self._reset_mobile_robot(robot_x,robot_y,robot_z,yaw)
 
     def _take_action(self, action_idx):
         self.robot_x = self.pose_sensor.robot().position.x
