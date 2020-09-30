@@ -26,8 +26,8 @@ class ModelSaver:
 
 #
 class DoorPullTaskEnv(DoorOpenTaskEnv):
-    def __init__(self,resolution=(64,64),noise=0.0):
-        super(DoorPullTaskEnv, self).__init__(resolution,noise)
+    def __init__(self,resolution=(64,64)):
+        super(DoorPullTaskEnv, self).__init__(resolution)
         self.door_angle = 0.1
 
     def _set_init(self):
@@ -102,8 +102,8 @@ class DoorPullTaskEnv(DoorOpenTaskEnv):
 #
 #
 class DoorPushTaskEnv(DoorOpenTaskEnv):
-    def __init__(self,resolution=(64,64),noise=0.0):
-        super(DoorPushTaskEnv, self).__init__(resolution,noise)
+    def __init__(self,resolution=(64,64)):
+        super(DoorPushTaskEnv, self).__init__(resolution)
         self.robot_x = -0.5
 
     def _set_init(self):
@@ -158,8 +158,8 @@ class DoorPushTaskEnv(DoorOpenTaskEnv):
 #
 #
 class DoorTraverseTaskEnv(DoorOpenTaskEnv):
-    def __init__(self,resolution=(64,64),noise=0.0):
-        super(DoorTraverseTaskEnv, self).__init__(resolution,noise)
+    def __init__(self,resolution=(64,64)):
+        super(DoorTraverseTaskEnv, self).__init__(resolution)
         self.robot_x = 0.61
         self.door_pull_agent = self._load_door_pull_agent('door_pull_3',5)
 

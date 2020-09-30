@@ -15,13 +15,13 @@ from tf.transformations import quaternion_from_euler
 import cv2
 from cv_bridge import CvBridge, CvBridgeError
 import math
-
+import skimage
 
 """
-CameraSensor
+CameraSensor with resolution, topic and guassian noise level by default variance = 0.05, mean = 0.0
 """
 class CameraSensor():
-    def __init__(self, resolution=(64,64), topic='/cam_front/image_raw', noise=0.0):
+    def __init__(self, resolution=(64,64), topic='/cam_front/image_raw', noise=0.05):
         self.resolution = resolution
         self.topic = topic
         self.noise = noise
@@ -32,7 +32,8 @@ class CameraSensor():
 
     def _image_cb(self,data):
         try:
-            self.rgb_image = self.bridge.imgmsg_to_cv2(data, "bgr8")
+            image = self.bridge.imgmsg_to_cv2(data, "bgr8")
+            self.rgb_image = self._guass_noisy(image, self.noise)
             self.grey_image = cv2.cvtColor(self.rgb_image, cv2.COLOR_BGR2GRAY)
         except CvBridgeError as e:
             print(e)
@@ -42,7 +43,8 @@ class CameraSensor():
         while self.rgb_image is None and not rospy.is_shutdown():
             try:
                 data = rospy.wait_for_message(self.topic, Image, timeout=5.0)
-                self.rgb_image = self.bridge.imgmsg_to_cv2(data, "bgr8")
+                image = self.bridge.imgmsg_to_cv2(data, "bgr8")
+                self.rgb_image = self._guass_noisy(image, self.noise)
                 rospy.logdebug("Current image READY=>")
             except:
                 rospy.logerr("Current image not ready yet, retrying for getting image")
@@ -60,6 +62,32 @@ class CameraSensor():
         img_arr = np.array(img)/255 - 0.5
         img_arr = img_arr.reshape((64,64,1))
         return img_arr
+
+    def _guass_noisy(self,image,var):
+        img = skimage.util.img_as_float(image)
+        noisy = skimage.util.random_noise(img,'gaussian',mean=0.0,var=var)
+        return skimage.util.img_as_ubyte(noisy)
+
+    def _noisy(self,image,type):
+        if type == 'guassian':
+            img = skimage.util.img_as_float(image)
+            noisy = skimage.util.random_noise(img,'gaussian')
+            res = skimage.util.img_as_ubyte(noisy)
+        elif type == 'salt':
+            img = skimage.util.img_as_float(image)
+            noisy = skimage.util.random_noise(img,'salt')
+            res = skimage.util.img_as_ubyte(noisy)
+        elif type == 'pepper':
+            img = skimage.util.img_as_float(image)
+            noisy = skimage.util.random_noise(img,'pepper')
+            res = skimage.util.img_as_ubyte(noisy)
+        elif type == 'poisson':
+            img = skimage.util.img_as_float(image)
+            noisy = skimage.util.random_noise(img,'poisson')
+            res = skimage.util.img_as_ubyte(noisy)
+        else:
+            res = image
+        return res
 
 """
 pose sensor
@@ -150,7 +178,7 @@ register(
 
 class DoorOpenTaskEnv(GymGazeboEnv):
 
-  def __init__(self,resolution=(64,64),noise=0.0):
+  def __init__(self,resolution=(64,64)):
     """
     Initializes a new DoorOpenTaskEnv environment.
     """
@@ -170,12 +198,12 @@ class DoorOpenTaskEnv(GymGazeboEnv):
     rospy.logdebug("Start DoorOpenTaskEnv INIT...")
     self.gazebo.unpauseSim()
 
-    self.front_camera = CameraSensor(resolution,'/cam_front/image_raw',noise)
-    self.back_camera = CameraSensor(resolution,'/cam_back/image_raw',noise)
-    self.up_camera = CameraSensor(resolution,'/cam_up/image_raw',noise)
+    self.front_camera = CameraSensor(resolution,'/cam_front/image_raw')
+    self.back_camera = CameraSensor(resolution,'/cam_back/image_raw')
+    self.up_camera = CameraSensor(resolution,'/cam_up/image_raw')
 
-    self.driver = RobotDriver(noise)
-    self.pose_sensor = PoseSensor(noise)
+    self.driver = RobotDriver()
+    self.pose_sensor = PoseSensor()
 
     self._check_all_sensors_ready()
     self.robot_pose_pub = rospy.Publisher('/gazebo/set_model_state', ModelState, queue_size=1)
@@ -209,10 +237,6 @@ class DoorOpenTaskEnv(GymGazeboEnv):
 
   def _get_observation(self):
     self._display_images()
-    # img_front = self.front_camera.image_arr()
-    # img_back = self.back_camera.image_arr()
-    # img_up = self.up_camera.image_arr()
-    # (64x64x9) image
     img_front = self.front_camera.grey_arr()
     img_back = self.back_camera.grey_arr()
     img_up = self.up_camera.grey_arr()
