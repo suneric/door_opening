@@ -21,7 +21,7 @@ import skimage
 CameraSensor with resolution, topic and guassian noise level by default variance = 0.05, mean = 0.0
 """
 class CameraSensor():
-    def __init__(self, resolution=(64,64), topic='/cam_front/image_raw', noise=0.05):
+    def __init__(self, resolution=(64,64), topic='/cam_front/image_raw', noise=0.0):
         self.resolution = resolution
         self.topic = topic
         self.noise = noise
@@ -34,6 +34,7 @@ class CameraSensor():
         try:
             image = self.bridge.imgmsg_to_cv2(data, "bgr8")
             self.rgb_image = self._guass_noisy(image, self.noise)
+            # print("image", image, "noise", self.rgb_image)
             self.grey_image = cv2.cvtColor(self.rgb_image, cv2.COLOR_BGR2GRAY)
         except CvBridgeError as e:
             print(e)
@@ -64,6 +65,8 @@ class CameraSensor():
         return img_arr
 
     def _guass_noisy(self,image,var):
+        if var == 0.0:
+            return image
         img = skimage.util.img_as_float(image)
         noisy = skimage.util.random_noise(img,'gaussian',mean=0.0,var=var)
         return skimage.util.img_as_ubyte(noisy)

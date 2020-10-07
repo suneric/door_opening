@@ -34,8 +34,8 @@ class DoorPullTaskEnv(DoorOpenTaskEnv):
       self.driver.stop()
       self._reset_mobile_robot(1.5,0.5,0.075,3.14)
       self._wait_door_closed()
-      self._random_init_mobile_robot()
-      #self._reset_mobile_robot(0.61,0.77,0.075,3.3)
+      #self._random_init_mobile_robot()
+      self._reset_mobile_robot(0.61,0.77,0.075,3.3)
       self.driver.stop()
       self.step_cnt = 0
       self.success = False
@@ -161,10 +161,10 @@ class DoorTraverseTaskEnv(DoorOpenTaskEnv):
     def __init__(self,resolution=(64,64)):
         super(DoorTraverseTaskEnv, self).__init__(resolution)
         self.robot_x = 0.61
-        self.door_pull_agent = self._load_door_pull_agent('door_pull_3',5)
+        self.door_pull_agent = self._load_door_pull_agent('door_pull_m1',8)
 
     def _load_door_pull_agent(self,dqn_model,act_dim):
-        agent = DQNAgent(name="door_pull",dim_img=(64,64,9),dim_act=act_dim)
+        agent = DQNAgent(name="door_pull",dim_img=(64,64,3),dim_act=act_dim)
         model_path = os.path.join(sys.path[0], 'trained_models', dqn_model, 'models')
         agent.dqn_active = tf.keras.models.load_model(model_path)
         agent.epsilon = 0.0 # determinitic action without random choice
