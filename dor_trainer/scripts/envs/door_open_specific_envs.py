@@ -197,12 +197,11 @@ class DoorTraverseTaskEnv(DoorOpenTaskEnv):
         reward = 0
         if self.success:
             reward = 100
+        elif self._door_traverse_failed():
+            reward = -10
         else:
-            reward = -(self.pose_sensor.robot().position.x - self.robot_x)
+            reward = -(self.pose_sensor.robot().position.x - self.robot_x) - 0.1
 
-            # try to achieve less steps
-        # penalty = 0.1
-        #print("step reward and penalty: ", reward, penalty)
         return reward
 
     def _door_traverse_failed(self):
