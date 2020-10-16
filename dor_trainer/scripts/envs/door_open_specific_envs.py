@@ -78,14 +78,12 @@ class DoorPullTaskEnv(DoorOpenTaskEnv):
       reward = 0
       if self.success:
           reward = 100
+      elif self._door_pull_failed():
+          reward = -50
       else:
           door_r, door_a = self._door_position()
           delta_a = door_a-self.door_angle
-          reward = delta_a*10
-
-      # # try to achieve less steps
-      # penalty = 0.1
-      #print("step reward and penalty: ", reward, penalty)
+          reward = delta_a*10 - 1
       return reward
 
     # check the position of camera
@@ -98,6 +96,7 @@ class DoorPullTaskEnv(DoorOpenTaskEnv):
             if campose_r > 1.1*doorpose_r or campose_a > 1.1*doorpos_a:
                 return True
         return False
+        
 #
 #
 #
@@ -139,11 +138,11 @@ class DoorPushTaskEnv(DoorOpenTaskEnv):
         reward = 0
         if self.success:
             reward = 100
+        elif self._door_push_failed():
+            reward = -50
         else:
-            reward = self.pose_sensor.robot().position.x - self.robot_x
-        # try to achieve less steps
-        # penalty = 0.1
-        #print("step reward and penalty: ", reward, penalty)
+            delta_x = self.pose_sensor.robot().position.x - self.robot_x
+            reward = delta_x*10-1
         return reward
 
     def _door_push_failed(self):
@@ -198,10 +197,10 @@ class DoorTraverseTaskEnv(DoorOpenTaskEnv):
         if self.success:
             reward = 100
         elif self._door_traverse_failed():
-            reward = -10
+            reward = -50
         else:
-            reward = -(self.pose_sensor.robot().position.x - self.robot_x) - 0.1
-
+            delta_x = -(self.pose_sensor.robot().position.x - self.robot_x)
+            reward = delta_x*10 - 1
         return reward
 
     def _door_traverse_failed(self):

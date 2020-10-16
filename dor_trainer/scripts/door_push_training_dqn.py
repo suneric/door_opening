@@ -22,7 +22,7 @@ if __name__=='__main__':
     env = DoorPushTaskEnv(resolution=(64,64))
     act_dim = env.action_dimension()
     # parameter
-    num_episodes = 8000
+    num_episodes = 10000
     num_steps = env.max_episode_steps
     train_freq = 80
     # variables

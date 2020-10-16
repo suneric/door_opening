@@ -21,7 +21,7 @@ import skimage
 CameraSensor with resolution, topic and guassian noise level by default variance = 0.05, mean = 0.0
 """
 class CameraSensor():
-    def __init__(self, resolution=(64,64), topic='/cam_front/image_raw', noise=0.0):
+    def __init__(self, resolution=(64,64), topic='/cam_front/image_raw', noise=0.03):
         self.resolution = resolution
         self.topic = topic
         self.noise = noise
@@ -192,7 +192,7 @@ class DoorOpenTaskEnv(GymGazeboEnv):
 
     self.door_dim = [0.9144, 0.0698] # length, width
     self.info = {}
-    self.max_episode_steps = 100
+    self.max_episode_steps = 60
     self.action_space = 2*np.array([[1.5,3.14],[1.5,0.0],[0.0,3.14],[-1.5,3.14],[-1.5,0.0],[1.5,-3.14],[0.0,-3.14],[-1.5,-3.14]]) # x and yaw velocities
     self.step_cnt = 0
     self.door_angle = 0.1 # inital angle of door
