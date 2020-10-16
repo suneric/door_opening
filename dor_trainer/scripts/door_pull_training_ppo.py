@@ -10,16 +10,17 @@ import logging
 logging.basicConfig(format='%(asctime)s %(message)s',level=logging.INFO)
 
 from agents.ppo_conv import PPOAgent, PPOBuffer
-from envs.door_open_specific_envs import DoorTraverseTaskEnv, ModelSaver
+from envs.door_open_specific_envs import DoorPullTaskEnv, ModelSaver
 import rospy
 import tensorflow as tf
 
 # application wise random seed
 np.random.seed(7)
 
+
 if __name__=='__main__':
     rospy.init_node('ppo_train', anonymous=True, log_level=rospy.INFO)
-    env = DoorTraverseTaskEnv(resolution=(64,64))
+    env = DoorPullTaskEnv(resolution=(64,64))
     dim_obs = (64,64,3)
     dim_act = env.action_dimension()
     agent = PPOAgent(
@@ -28,14 +29,14 @@ if __name__=='__main__':
         dim_act=dim_act,
     )
     replay_buffer = PPOBuffer(dim_obs=dim_obs, dim_act=1, size=1000, gamma=0.99, lam=0.97)
-    model_dir = os.path.join(sys.path[0], 'saved_models', 'door_traverse', agent.name)
+    model_dir = os.path.join(sys.path[0], 'saved_models', 'door_open', agent.name)
     # paramas
     steps_per_epoch = replay_buffer.max_size
     epochs = 40
     iter_a = 80
     iter_c = 80
     max_ep_len=env.max_episode_steps
-    save_freq=20
+    save_freq=10
     # get ready
     summary_writer = tf.summary.create_file_writer(model_dir)
     summary_writer.set_as_default()
@@ -50,9 +51,6 @@ if __name__=='__main__':
         for st in range(steps_per_epoch):
             act, val, logp = agent.pi_of_a_given_s(np.expand_dims(obs, axis=0))
             n_obs, rew, done, info = env.step(act)
-            ## compute customized reward
-            #rew = prev_rx - env.robot_x
-            #prev_rx = env.robot_x
             rospy.logdebug(
                 "\nepisode: {}, step: {} \nstate: {} \naction: {} \nreward: {} \ndone: {} \nn_state: {}".format(episode_counter+1, st+1, obs, act, rew, done, n_obs)
             )
@@ -67,6 +65,7 @@ if __name__=='__main__':
             terminal = done or timeout
             epoch_ended = (st==steps_per_epoch-1)
             if terminal or epoch_ended:
+                episode_counter += 1
                 if epoch_ended and not(terminal):
                     print('Warning: trajectory cut off by epoch at {} steps.'.format(ep_len))
                 if timeout or epoch_ended:
@@ -75,7 +74,6 @@ if __name__=='__main__':
                     val = 0
                 replay_buffer.finish_path(val)
                 if terminal:
-                    episode_counter += 1
                     episodic_returns.append(ep_ret)
                     sedimentary_returns.append(sum(episodic_returns)/episode_counter)
                     episodic_steps.append(step_counter)
