@@ -29,10 +29,10 @@ if __name__=='__main__':
         dim_act=dim_act,
     )
     replay_buffer = PPOBuffer(dim_obs=dim_obs, dim_act=1, size=1000, gamma=0.99, lam=0.97)
-    model_dir = os.path.join(sys.path[0], 'saved_models', 'door_open', agent.name)
+    model_dir = os.path.join(sys.path[0], 'saved_models', 'door_open', agent.name+'var.05')
     # paramas
     steps_per_epoch = replay_buffer.max_size
-    epochs = 40
+    epochs = 50
     iter_a = 80
     iter_c = 80
     max_ep_len=env.max_episode_steps

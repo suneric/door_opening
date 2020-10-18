@@ -129,7 +129,7 @@ class CategoricalActor(tf.keras.Model):
     def _log_prob_from_distribution(self, pi, act):
         return pi.log_prob(act)
 
-    def __call__(self, obs, act=None):
+    def call(self, obs, act=None):
         pi = self._distribution(obs)
         logp_a = None
         if act is not None:
@@ -153,7 +153,7 @@ class GaussianActor(tf.keras.Model):
     def _log_prob_from_distribution(self, pi, act):
         return tf.math.reduce_sum(pi.log_prob(act), axis=-1)
 
-    def __call__(self, obs, act=None):
+    def call(self, obs, act=None):
         pi = self._distribution(obs)
         logp_a = None
         if act is not None:
@@ -167,7 +167,8 @@ class Critic(tf.keras.Model):
         super(Critic, self).__init__(name='critic', **kwargs)
         self.val_net = convnet(dim_inputs=dim_obs, dim_outputs=1, activation='relu')
 
-    def __call__(self, obs):
+    @tf.function
+    def call(self, obs):
         return tf.squeeze(self.val_net(obs), axis=-1)
 
 class PPOAgent(tf.keras.Model):
