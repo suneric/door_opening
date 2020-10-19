@@ -37,11 +37,10 @@ if __name__=='__main__':
         dim_act=dim_act,
     )
     replay_buffer = PPOBuffer(dim_obs=dim_obs, dim_act=1, size=1000, gamma=0.99, lam=0.97)
-    model_dir = os.path.join(sys.path[0], 'saved_models', 'door_open', agent.name, datetime.now().strftime("%Y-%m-%d-%H-%M"))
+    model_dir = os.path.join(sys.path[0], 'saved_models', 'door_open', agent.name+'_noise'+str(args.noise), datetime.now().strftime("%Y-%m-%d-%H-%M"))
     # paramas
     steps_per_epoch = replay_buffer.max_size
     # epochs = 100
-    max_episode = 10000
     iter_a = 80
     iter_c = 80
     max_ep_len=args.max_step
@@ -56,7 +55,7 @@ if __name__=='__main__':
     episodic_steps = []
     start_time = time.time()
     # main loop
-    while episode_counter < max_episode:
+    while episode_counter < args.max_ep:
         for st in range(steps_per_epoch):
             act, val, logp = agent.pi_of_a_given_s(np.expand_dims(obs, axis=0))
             n_obs, rew, done, info = env.step(act)
@@ -101,7 +100,7 @@ if __name__=='__main__':
         tf.summary.scalar('loss_v', loss_v, step=ep)
         ep += 1
         # Save model
-        if not ep%save_freq or (episode_counter >= max_episode):
+        if not ep%save_freq or (episode_counter >= args.max_ep):
             # save logits_net
             logits_net_path = os.path.join(model_dir, 'logits_net', str(ep))
             if not os.path.exists(os.path.dirname(logits_net_path)):
