@@ -24,6 +24,108 @@ class ModelSaver:
             net.save(model_path)
             print("save trained model:", model_path)
 
+class DoorPullAndTraverseEnv(DoorOpenTaskEnv):
+    def __init__(self,resolution=(64,64)):
+        super(DoorPullAndTraverseEnv, self).__init__(resolution)
+        self.door_angle = 0.1
+        self.robot_x = 0.61
+
+    def _set_init(self):
+      self.driver.stop()
+      self._reset_mobile_robot(1.5,0.5,0.075,3.14)
+      self._wait_door_closed()
+      self._random_init_mobile_robot()
+      #self._reset_mobile_robot(0.61,0.77,0.075,3.3)
+      self.driver.stop()
+      self.step_cnt = 0
+      self.stage = 'pull'
+      self.success = False
+
+    def _random_init_mobile_robot(self):
+        cx = 0.01*(np.random.uniform()-0.5)+0.07
+        cy = 0.01*(np.random.uniform()-0.5)+0.95
+        theta = 0.1*(np.random.uniform()-0.5)+pi
+        camera_pose = np.array([[cos(theta),sin(theta),0,cx],
+                                [-sin(theta),cos(theta),0,cy],
+                                [0,0,1,0.075],
+                                [0,0,0,1]])
+        mat = np.array([[1,0,0,0.5],
+                        [0,1,0,-0.25],
+                        [0,0,1,0],
+                        [0,0,0,1]])
+        R = np.dot(camera_pose,np.linalg.inv(mat));
+        euler = euler_from_matrix(R[0:3,0:3], 'rxyz')
+        robot_x = R[0,3]
+        robot_y = R[1,3]
+        robot_z = R[2,3]
+        yaw = euler[2]
+        self._reset_mobile_robot(robot_x,robot_y,robot_z,yaw)
+
+    def _take_action(self, action_idx):
+      _,self.door_angle = self._door_position()
+      self.robot_x = self.pose_sensor.robot().position.x
+      action = self.action_space[action_idx]
+      self.driver.drive(action[0],action[1])
+      rospy.sleep(0.5)
+      self.step_cnt += 1
+      self.success = self._robot_is_out()
+      if self.stage == 'pull' and self._door_is_open():
+          self.stage = 'traverse'
+
+    def _is_done(self):
+        if self.stage == 'pull':
+            if self._door_pull_failed():
+                return True
+            else:
+                return False
+        else:
+            if self._door_traverse_failed() or self._robot_is_out():
+                return True
+            else:
+                return False
+
+    def _compute_reward(self):
+        # divid to two stages, pull and traverse with different rewarding function
+        reward = 0
+        if self.stage == 'pull':
+            if self._door_is_open():
+                reward = 100
+            elif self._door_pull_failed():
+                reward = -50
+            else:
+                door_r, door_a = self._door_position()
+                delta_a = door_a-self.door_angle
+                reward = delta_a*10 - 1
+        else:
+            if self.success:
+                reward = 100
+            elif self._door_traverse_failed():
+                reward = -50
+            else:
+                delta_x = -(self.pose_sensor.robot().position.x - self.robot_x)
+                reward = delta_x*10 - 1
+        return reward
+
+    # check the position of camera
+    # if it is in the door block, still trying
+    # else failed, reset env
+    def _door_pull_failed(self):
+        if not self._robot_is_out():
+            campose_r, campose_a = self._camera_position()
+            doorpose_r, doorpos_a = self._door_position()
+            if campose_r > 1.1*doorpose_r or campose_a > 1.1*doorpos_a:
+                return True
+        return False
+
+    def _door_traverse_failed(self):
+        if not self._robot_is_out():
+            campose_r, campose_a = self._camera_position()
+            doorpose_r, doorpos_a = self._door_position()
+            if campose_r > 1.1*doorpose_r or campose_a > 1.1*doorpos_a:
+                return True
+        return False
+#
+
 #
 class DoorPullTaskEnv(DoorOpenTaskEnv):
     def __init__(self,resolution=(64,64)):
@@ -96,7 +198,7 @@ class DoorPullTaskEnv(DoorOpenTaskEnv):
             if campose_r > 1.1*doorpose_r or campose_a > 1.1*doorpos_a:
                 return True
         return False
-        
+
 #
 #
 #
@@ -107,8 +209,8 @@ class DoorPushTaskEnv(DoorOpenTaskEnv):
 
     def _set_init(self):
         self.driver.stop()
-        self._random_init_mobile_robot()
-        #self._reset_mobile_robot(-0.5,0.7,0.075,0)
+        #self._random_init_mobile_robot()
+        self._reset_mobile_robot(-0.5,0.7,0.075,0)
         self._wait_door_closed()
         self.step_cnt = 0
         self.success = False

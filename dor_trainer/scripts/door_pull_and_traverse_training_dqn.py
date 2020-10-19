@@ -9,7 +9,7 @@ import logging
 logging.basicConfig(format='%(asctime)s %(message)s',level=logging.INFO)
 
 from agents.dqn_conv import DQNAgent
-from envs.door_open_specific_envs import DoorPullTaskEnv, ModelSaver
+from envs.door_open_specific_envs import DoorPullAndTraverseEnv, ModelSaver
 import rospy
 import tensorflow as tf
 
@@ -19,10 +19,10 @@ np.random.seed(7)
 if __name__=='__main__':
     rospy.init_node('dqn_train', anonymous=True, log_level=rospy.INFO)
     # instantiate env
-    env = DoorPullTaskEnv(resolution=(64,64))
+    env = DoorPullAndTraverseEnv(resolution=(64,64))
     act_dim = env.action_dimension()
     # parameter
-    num_episodes = 1000
+    num_episodes = 20000
     num_steps = env.max_episode_steps
     train_freq = 80
     # variables
@@ -32,7 +32,7 @@ if __name__=='__main__':
     sedimentary_returns = []
     ep_rew = 0
     # instantiate agent
-    agent_p = DQNAgent(name='door_pull',dim_img=(64,64,3),dim_act=act_dim)
+    agent_p = DQNAgent(name='door_pull_traverse',dim_img=(64,64,3),dim_act=act_dim)
     model_path = os.path.join(sys.path[0], 'saved_models', agent_p.name, 'models')
 
     model_saver = ModelSaver(500)

@@ -21,7 +21,7 @@ import skimage
 CameraSensor with resolution, topic and guassian noise level by default variance = 0.05, mean = 0.0
 """
 class CameraSensor():
-    def __init__(self, resolution=(64,64), topic='/cam_front/image_raw', noise=0.03):
+    def __init__(self, resolution=(64,64), topic='/cam_front/image_raw', noise=0):
         self.resolution = resolution
         self.topic = topic
         self.noise = noise
