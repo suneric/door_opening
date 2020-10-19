@@ -29,10 +29,11 @@ if __name__=='__main__':
         dim_act=dim_act,
     )
     replay_buffer = PPOBuffer(dim_obs=dim_obs, dim_act=1, size=1000, gamma=0.99, lam=0.97)
-    model_dir = os.path.join(sys.path[0], 'saved_models', 'door_open', agent.name+'var.05')
+    model_dir = os.path.join(sys.path[0], 'saved_models', 'door_open', agent.name, datetime.now().strftime("%Y-%m-%d-%H-%M"))
     # paramas
     steps_per_epoch = replay_buffer.max_size
-    epochs = 50
+    # epochs = 100
+    max_episode = 10000
     iter_a = 80
     iter_c = 80
     max_ep_len=env.max_episode_steps
@@ -41,13 +42,13 @@ if __name__=='__main__':
     summary_writer = tf.summary.create_file_writer(model_dir)
     summary_writer.set_as_default()
     obs, info = env.reset()
-    ep_ret, ep_len = 0, 0
+    ep, ep_ret, ep_len = 0, 0, 0
     episode_counter, step_counter, success_counter = 0, 0, 0
     stepwise_rewards, episodic_returns, sedimentary_returns = [], [], []
     episodic_steps = []
     start_time = time.time()
     # main loop
-    for ep in range(epochs):
+    while episode_counter < max_episode:
         for st in range(steps_per_epoch):
             act, val, logp = agent.pi_of_a_given_s(np.expand_dims(obs, axis=0))
             n_obs, rew, done, info = env.step(act)
@@ -90,8 +91,9 @@ if __name__=='__main__':
         rospy.loginfo("\n====\nEpoch: {} \nEpisodes: {} \nSteps: {} \nAveReturn: {} \nSucceeded: {} \nLossPi: {} \nLossV: {} \nKLDivergence: {} \nEntropy: {} \nTimeElapsed: {}\n====\n".format(ep+1, episode_counter, step_counter, sedimentary_returns[-1], success_counter, loss_pi, loss_v, loss_info['kl'], loss_info['ent'], time.time()-start_time))
         tf.summary.scalar('loss_pi', loss_pi, step=ep)
         tf.summary.scalar('loss_v', loss_v, step=ep)
+        ep += 1
         # Save model
-        if not ep%save_freq or (ep==epochs-1):
+        if not ep%save_freq or (episode_counter >= max_episode):
             # save logits_net
             logits_net_path = os.path.join(model_dir, 'logits_net', str(ep))
             if not os.path.exists(os.path.dirname(logits_net_path)):
