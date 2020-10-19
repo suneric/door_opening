@@ -16,14 +16,23 @@ import tensorflow as tf
 # application wise random seed
 np.random.seed(7)
 
+def get_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--noise', type=float, default=0.0)
+    parser.add_argument('--max_ep', type=int, default=20000)
+    parser.add_argument('--max_step', type=int, default=100)
+    return parser.parse_args()
+
 if __name__=='__main__':
+    args = get_args()
     rospy.init_node('dqn_train', anonymous=True, log_level=rospy.INFO)
-    # instantiate env
-    env = DoorPullAndTraverseEnv(resolution=(64,64))
-    act_dim = env.action_dimension()
     # parameter
-    num_episodes = 20000
-    num_steps = env.max_episode_steps
+    num_episodes = args.max_ep
+    num_steps = args.max_step
+    # instantiate env
+    env = DoorPullAndTraverseEnv(resolution=(64,64),cam_noise=args.noise)
+    act_dim = env.action_dimension()
+
     train_freq = 80
     # variables
     step_counter = 0

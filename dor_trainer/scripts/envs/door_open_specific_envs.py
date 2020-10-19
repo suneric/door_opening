@@ -25,8 +25,8 @@ class ModelSaver:
             print("save trained model:", model_path)
 
 class DoorPullAndTraverseEnv(DoorOpenTaskEnv):
-    def __init__(self,resolution=(64,64)):
-        super(DoorPullAndTraverseEnv, self).__init__(resolution)
+    def __init__(self,resolution=(64,64), cam_noise=0.0):
+        super(DoorPullAndTraverseEnv, self).__init__(resolution,cam_noise)
         self.door_angle = 0.1
         self.robot_x = 0.61
 
@@ -128,16 +128,16 @@ class DoorPullAndTraverseEnv(DoorOpenTaskEnv):
 
 #
 class DoorPullTaskEnv(DoorOpenTaskEnv):
-    def __init__(self,resolution=(64,64)):
-        super(DoorPullTaskEnv, self).__init__(resolution)
+    def __init__(self,resolution=(64,64),cam_noise=0.0):
+        super(DoorPullTaskEnv, self).__init__(resolution, cam_noise)
         self.door_angle = 0.1
 
     def _set_init(self):
       self.driver.stop()
       self._reset_mobile_robot(1.5,0.5,0.075,3.14)
       self._wait_door_closed()
-      #self._random_init_mobile_robot()
-      self._reset_mobile_robot(0.61,0.77,0.075,3.3)
+      self._random_init_mobile_robot()
+      #self._reset_mobile_robot(0.61,0.77,0.075,3.3)
       self.driver.stop()
       self.step_cnt = 0
       self.success = False
@@ -203,23 +203,23 @@ class DoorPullTaskEnv(DoorOpenTaskEnv):
 #
 #
 class DoorPushTaskEnv(DoorOpenTaskEnv):
-    def __init__(self,resolution=(64,64)):
-        super(DoorPushTaskEnv, self).__init__(resolution)
+    def __init__(self,resolution=(64,64),cam_noise=0.0):
+        super(DoorPushTaskEnv, self).__init__(resolution,cam_noise)
         self.robot_x = -0.5
 
     def _set_init(self):
         self.driver.stop()
-        #self._random_init_mobile_robot()
-        self._reset_mobile_robot(-0.5,0.7,0.075,0)
+        self._random_init_mobile_robot()
+        #self._reset_mobile_robot(-0.5,0.7,0.075,0)
         self._wait_door_closed()
         self.step_cnt = 0
         self.success = False
 
     def _random_init_mobile_robot(self):
-        robot_x = 0.15*(np.random.uniform()-0.5)-0.7
-        robot_y = 0.25*(np.random.uniform()-0.5)+0.5
+        robot_x = 0.1*(np.random.uniform()-0.5)-0.7
+        robot_y = 0.1*(np.random.uniform()-0.5)+0.5
         robot_z = 0.075
-        yaw = np.random.uniform()-0.5
+        yaw = 0.1*pi*(np.random.uniform()-0.5)
         self._reset_mobile_robot(robot_x,robot_y,robot_z,yaw)
 
     def _take_action(self, action_idx):
@@ -259,8 +259,8 @@ class DoorPushTaskEnv(DoorOpenTaskEnv):
 #
 #
 class DoorTraverseTaskEnv(DoorOpenTaskEnv):
-    def __init__(self,resolution=(64,64)):
-        super(DoorTraverseTaskEnv, self).__init__(resolution)
+    def __init__(self,resolution=(64,64),cam_noise=0.0):
+        super(DoorTraverseTaskEnv, self).__init__(resolution,cam_noise)
         self.robot_x = 0.61
         self.door_pull_agent = self._load_door_pull_agent('door_pull_m1',8)
 

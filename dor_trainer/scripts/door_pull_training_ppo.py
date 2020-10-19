@@ -17,10 +17,17 @@ import tensorflow as tf
 # application wise random seed
 np.random.seed(7)
 
+def get_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--noise', type=float, default=0.0)
+    parser.add_argument('--max_ep', type=int, default=10000)
+    parser.add_argument('--max_step', type=int, default=60)
+    return parser.parse_args()
 
 if __name__=='__main__':
+    args = get_args()
     rospy.init_node('ppo_train', anonymous=True, log_level=rospy.INFO)
-    env = DoorPullTaskEnv(resolution=(64,64))
+    env = DoorPullTaskEnv(resolution=(64,64), cam_noise=args.noise)
     dim_obs = (64,64,3)
     dim_act = env.action_dimension()
     agent = PPOAgent(
@@ -35,7 +42,7 @@ if __name__=='__main__':
     epochs = 50
     iter_a = 80
     iter_c = 80
-    max_ep_len=env.max_episode_steps
+    max_ep_len=args.max_step
     save_freq=10
     # get ready
     summary_writer = tf.summary.create_file_writer(model_dir)
@@ -61,7 +68,7 @@ if __name__=='__main__':
             replay_buffer.store(obs, act, rew, val, logp)
             obs = n_obs # SUPER CRITICAL!!!
             # handle episode termination
-            timeout = (ep_len==env.max_episode_steps)
+            timeout = (ep_len==max_ep_len)
             terminal = done or timeout
             epoch_ended = (st==steps_per_epoch-1)
             if terminal or epoch_ended:
@@ -102,7 +109,7 @@ if __name__=='__main__':
             if not os.path.exists(os.path.dirname(val_net_path)):
                 os.makedirs(os.path.dirname(val_net_path))
             agent.critic.val_net.save(val_net_path)
-            # Save returns 
+            # Save returns
             np.save(os.path.join(model_dir, 'episodic_returns.npy'), episodic_returns)
             np.save(os.path.join(model_dir, 'sedimentary_returns.npy'), sedimentary_returns)
             np.save(os.path.join(model_dir, 'episodic_steps.npy'), episodic_steps)

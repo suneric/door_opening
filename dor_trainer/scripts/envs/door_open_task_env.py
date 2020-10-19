@@ -181,9 +181,10 @@ register(
 
 class DoorOpenTaskEnv(GymGazeboEnv):
 
-  def __init__(self,resolution=(64,64)):
+  def __init__(self,resolution=(64,64),cam_noise=0.0):
     """
-    Initializes a new DoorOpenTaskEnv environment.
+    Initializes a new DoorOpenTaskEnv environment, with define the image size
+    and camera noise level (gaussian noise variance, the mean is 0.0)
     """
     super(DoorOpenTaskEnv, self).__init__(
       start_init_physics_parameters=False,
@@ -192,7 +193,6 @@ class DoorOpenTaskEnv(GymGazeboEnv):
 
     self.door_dim = [0.9144, 0.0698] # length, width
     self.info = {}
-    self.max_episode_steps = 60
     self.action_space = 2*np.array([[1.5,3.14],[1.5,0.0],[0.0,3.14],[-1.5,3.14],[-1.5,0.0],[1.5,-3.14],[0.0,-3.14],[-1.5,-3.14]]) # x and yaw velocities
     self.step_cnt = 0
     self.door_angle = 0.1 # inital angle of door
@@ -201,9 +201,9 @@ class DoorOpenTaskEnv(GymGazeboEnv):
     rospy.logdebug("Start DoorOpenTaskEnv INIT...")
     self.gazebo.unpauseSim()
 
-    self.front_camera = CameraSensor(resolution,'/cam_front/image_raw')
-    self.back_camera = CameraSensor(resolution,'/cam_back/image_raw')
-    self.up_camera = CameraSensor(resolution,'/cam_up/image_raw')
+    self.front_camera = CameraSensor(resolution,'/cam_front/image_raw',cam_noise)
+    self.back_camera = CameraSensor(resolution,'/cam_back/image_raw',cam_noise)
+    self.up_camera = CameraSensor(resolution,'/cam_up/image_raw',cam_noise)
 
     self.driver = RobotDriver()
     self.pose_sensor = PoseSensor()
