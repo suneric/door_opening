@@ -91,19 +91,19 @@ class DoorPullAndTraverseEnv(DoorOpenTaskEnv):
             if self._door_is_open():
                 reward = 100
             elif self._door_pull_failed():
-                reward = -50
+                reward = -10
             else:
                 door_r, door_a = self._door_position()
                 delta_a = door_a-self.door_angle
-                reward = delta_a*10 - 1
+                reward = delta_a*10 - 0.1
         else:
             if self.success:
                 reward = 100
             elif self._door_traverse_failed():
-                reward = -50
+                reward = -10
             else:
                 delta_x = -(self.pose_sensor.robot().position.x - self.robot_x)
-                reward = delta_x*10 - 1
+                reward = delta_x*10 - 0.1
         return reward
 
     # check the position of camera
@@ -181,11 +181,11 @@ class DoorPullTaskEnv(DoorOpenTaskEnv):
       if self.success:
           reward = 100
       elif self._door_pull_failed():
-          reward = -50
+          reward = -10
       else:
           door_r, door_a = self._door_position()
           delta_a = door_a-self.door_angle
-          reward = delta_a*10 - 1
+          reward = delta_a*10 - 0.1
       return reward
 
     # check the position of camera
@@ -241,10 +241,10 @@ class DoorPushTaskEnv(DoorOpenTaskEnv):
         if self.success:
             reward = 100
         elif self._door_push_failed():
-            reward = -50
+            reward = -10
         else:
             delta_x = self.pose_sensor.robot().position.x - self.robot_x
-            reward = delta_x*10-1
+            reward = delta_x*10-0.1
         return reward
 
     def _door_push_failed(self):
@@ -299,10 +299,10 @@ class DoorTraverseTaskEnv(DoorOpenTaskEnv):
         if self.success:
             reward = 100
         elif self._door_traverse_failed():
-            reward = -50
+            reward = -10
         else:
             delta_x = -(self.pose_sensor.robot().position.x - self.robot_x)
-            reward = delta_x*10 - 1
+            reward = delta_x*10 - 0.1
         return reward
 
     def _door_traverse_failed(self):
