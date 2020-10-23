@@ -28,7 +28,7 @@ def dqn_pull_test(episode, path,model_name,act_dim,noise):
     model_path = os.path.join(sys.path[0], path, model_name, 'models')
     agent.dqn_active = tf.keras.models.load_model(model_path)
 
-    steps = env.max_episode_steps
+    steps = 60
     start_time = time.time()
     success_counter = 0
     episodic_returns = []
@@ -76,7 +76,7 @@ def dqn_push_test(episode,path,model_name,noise):
     model_path = os.path.join(sys.path[0], path, model_name, 'models')
     agent.dqn_active = tf.keras.models.load_model(model_path)
 
-    steps = env.max_episode_steps
+    steps = 60
     start_time = time.time()
     success_counter = 0
     episodic_returns = []
@@ -122,7 +122,7 @@ def dqn_traverse_test(episode,path,model_name,noise):
     model_path = os.path.join(sys.path[0], path, model_name, 'models')
     agent.dqn_active = tf.keras.models.load_model(model_path)
 
-    steps = env.max_episode_steps
+    steps = 60
     start_time = time.time()
     success_counter = 0
     episodic_returns = []
@@ -168,7 +168,7 @@ def get_args():
     parser.add_argument('--eps', type=int, default=10) # test episode
     parser.add_argument('--dim',type=int, default=8)
     parser.add_argument('--path',type=str, default="saved_models")
-    parser.add_argument('--noise' type=float, default=0.0)
+    parser.add_argument('--noise', type=float, default=0.0)
     return parser.parse_args()
 
 

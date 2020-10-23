@@ -258,8 +258,22 @@ class DoorOpenTaskEnv(GymGazeboEnv):
       cv2.imshow('front-back-up',img)
       cv2.waitKey(3)
 
+  # return the robot footprint and door position
   def _post_information(self):
-    return self.pose_sensor.robot()
+      door_radius, door_angle = self._door_position()
+      footprint_lf = self._robot_footprint_position(0.25,0.25)
+      footprint_lr = self._robot_footprint_position(-0.25,0.25)
+      footprint_rf = self._robot_footprint_position(0.25,-0.25)
+      footprint_rr = self._robot_footprint_position(-0.25,-0.25)
+      camera_pose = self._robot_footprint_position(0.5,-0.25)
+      info = {}
+      info['door'] = (door_radius,door_angle)
+      info['robot'] = [(footprint_lf[0,3],footprint_lf[1,3]),
+                    (footprint_rf[0,3],footprint_rf[1,3]),
+                    (footprint_lr[0,3],footprint_lr[1,3]),
+                    (footprint_rr[0,3],footprint_rr[1,3]),
+                    (camera_pose[0,3], camera_pose[1,3])]
+      return info
 
   #############################################################################
   # overidde functions
