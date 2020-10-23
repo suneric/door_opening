@@ -327,6 +327,6 @@ class DoorTraverseTaskEnv(DoorOpenTaskEnv):
             obs = self._get_observation()
             img = obs.copy()
             step_cnt += 1
-            if step_cnt > self.max_episode_steps:
+            if step_cnt > 60:
                 print("door pull exceeds max steps")
                 break
