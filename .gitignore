@@ -1,3 +1,4 @@
 *.weights
 *.pyc
+*.swp
 # saved_models
