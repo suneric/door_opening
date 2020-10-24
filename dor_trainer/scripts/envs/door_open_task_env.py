@@ -342,25 +342,26 @@ class DoorOpenTaskEnv(GymGazeboEnv):
   # robot is out of the door way (x < 0)
   def _robot_is_out(self):
       # footprint of robot
-      footprint_lf = self._robot_footprint_position(0.25,0.25)
-      footprint_lr = self._robot_footprint_position(-0.25,0.25)
-      footprint_rf = self._robot_footprint_position(0.25,-0.25)
-      footprint_rr = self._robot_footprint_position(-0.25,-0.25)
-      camera_pose = self._robot_footprint_position(0.5,-0.25)
-      if footprint_lf[0,3] < 0.0 and footprint_lr[0,3] < 0.0 and footprint_rf[0,3] < 0.0 and footprint_rr[0,3] < 0.0 and camera_pose[0,3] < 0.0:
+      fp_lf = self._robot_footprint_position(0.25,0.25)
+      fp_lr = self._robot_footprint_position(-0.25,0.25)
+      fp_rf = self._robot_footprint_position(0.25,-0.25)
+      fp_rr = self._robot_footprint_position(-0.25,-0.25)
+      cam_p = self._robot_footprint_position(0.5,-0.25)
+      if fp_lf[0,3] < 0.0 and fp_lr[0,3] < 0.0 and fp_rf[0,3] < 0.0 and fp_rr[0,3] < 0.0 and cam_p[0,3] < 0.0:
           return True
       else:
           return False
 
   def _robot_is_in(self):
       # footprint of robot
-      _, door_angle = self._door_position()
-      footprint_lf = self._robot_footprint_position(0.25,0.25)
-      footprint_lr = self._robot_footprint_position(-0.25,0.25)
-      footprint_rf = self._robot_footprint_position(0.25,-0.25)
-      footprint_rr = self._robot_footprint_position(-0.25,-0.25)
-      camera_pose = self._robot_footprint_position(0.5,-0.25)
-      if footprint_lf[0,3] > 0.0 and footprint_lr[0,3] > 0.0 and footprint_rf[0,3] > 0.0 and footprint_rr[0,3] > 0.0 and camera_pose[0,3] > 0.0 and door_angle < 0.2 :
+      dr, da = self._door_position()
+      fp_lf = self._robot_footprint_position(0.25,0.25)
+      fp_lr = self._robot_footprint_position(-0.25,0.25)
+      fp_rf = self._robot_footprint_position(0.25,-0.25)
+      fp_rr = self._robot_footprint_position(-0.25,-0.25)
+      cam_p = self._robot_footprint_position(0.5,-0.25)
+      d_x = dr*math.sin(da)
+      if fp_lf[0,3] > d_x and fp_lr[0,3] > d_x and fp_rf[0,3] > d_x and fp_rr[0,3] > d_x and cam_p[0,3] > d_x:
           return True
       else:
           return False
