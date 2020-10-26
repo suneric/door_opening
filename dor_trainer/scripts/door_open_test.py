@@ -88,7 +88,7 @@ def plot_trajectorty(t):
     line4.set_label('trajectory of mobile robot')
     line5, = plt.plot(np.matrix(cam_t)[:,0],np.matrix(cam_t)[:,1], linewidth=1.0, color='red',linestyle='dashed')
     line5.set_label('trajectory of sidebar')
-    plt.legend(loc='upper right')
+    #plt.legend(loc='upper right')
     plt.show()
 
 # a simple cost evaluation based on the end of the bar where camera placed at
@@ -226,15 +226,17 @@ if __name__ == "__main__":
     # trajectory analysis
     trajectory_steps = [len(i)-1 for i in trajectories]
     average_steps = int(sum(trajectory_steps)/len(trajectory_steps))
-    shortest = min(trajectories, key=len)
-    longest = max(trajectories, key=len)
     trajectory_costs = [round(trajectory_cost(i),3) for i in trajectories]
     print("====================")
     print("Success rate", len(trajectory_steps),"/", args.eps)
-    print("Average steps", average_steps, "Average Cost", round(sum(trajectory_costs)/len(trajectory_costs),3), "meters")
-    print("Shortest steps", len(shortest), "Cost", min(trajectory_costs), "meters")
-    print("Longest steps", len(longest), "Cost", max(trajectory_costs), "meters")
+    print("Average steps", average_steps)
+    print("Minimum steps", min(trajectory_steps))
+    print("Maximum steps", max(trajectory_steps))
+    print("Average Cost", sum(trajectory_costs)/len(trajectory_costs), "meters")
+    print("Lowest Cost",  min(trajectory_costs), "meters")
+    print("Highest Cost", max(trajectory_costs), "meters")
     print("====================")
 
-    # plot shortest trajectory
-    plot_trajectorty(shortest)
+    # plot trajectory with lowest cost
+    lowest_index = trajectory_costs.index(min(trajectory_costs))
+    plot_trajectorty(trajectories[lowest_index])

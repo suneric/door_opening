@@ -23,3 +23,15 @@
 ## scene color
 - door color: Gazebo/Yellow
 - Wall color: Gazebo/White
+
+
+# Test
+## 100 test cases
+- dqn without noise
+  - success rate: 98/100
+  - minimum steps: 17
+  - maximum steps: 54
+  - average steps: 25
+  - lowest cost: 1.154 m
+  - highest cost: 3.387 m
+  - average cost: 1.722 m
