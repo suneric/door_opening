@@ -7,6 +7,7 @@ import rospy
 from tf.transformations import quaternion_from_euler, euler_from_matrix
 from .door_open_task_env import DoorOpenTaskEnv
 from agents.dqn_conv import DQNAgent
+from agents.ppo_conv import PPOAgent, PPOBuffer
 import sys
 import os
 import tensorflow as tf
@@ -320,14 +321,15 @@ class DoorTraverseTaskEnv(DoorOpenTaskEnv):
                 return True
         return False
 
-    def _pull_door(self,agent):
+    def _pull_door(self):
         max_steps = 60
+        agent = self.door_pull_agent
         if self.door_pull_policy == 'ppo':
             obs = self._get_observation()
             img = obs.copy()
             for st in range(max_steps):
                 act, _, _ = agent.pi_of_a_given_s(np.expand_dims(img, axis=0))
-                obs,rew,done,info = env.step(act)
+                obs,rew,done,info = self.step(act)
                 img = obs.copy()
                 if done:
                     break
@@ -336,7 +338,7 @@ class DoorTraverseTaskEnv(DoorOpenTaskEnv):
             img = obs.copy()
             for st in range(max_steps):
                 act = agent.epsilon_greedy(img)
-                obs,rew,done,info = env.step(act)
+                obs,rew,done,info = self.step(act)
                 img = obs.copy()
                 if done:
                     break
