@@ -1,0 +1,41 @@
+- Deep Q-network (cnn-based):
+    - input: 64x64x3
+    - Conv2D: 32x3
+    - MaxPool2D: 2x2
+    - Conv2D: 32x3
+    - MaxPool2D: 2x2
+    - Conv2D: 32x3
+    - Flatten
+    - Dense: 128
+    - output: 8
+  - observation: 64x64x3 (3 gray image), camera looking forward, backword and upward
+  - action dimension (linear vel x, angular vel z): [[3.0,6.28], [3.0,0.0], [0.0,6.28],[-3.0,6.28],[-3.0,0.0],[3,-6.28],[0.0,-6.28],[-3,-6.28]]
+  - door is open when angle of door is over 0.45pi
+  - reward functions:
+    - door opening:
+      - 100 if mobile robot successfully open the door
+      - -10 if mobile robot fails to open the door
+      - da - 0.1 (da is door angle change, -0.1 for achieving less steps)
+    - door traversing:
+      - 100 if mobile robot successfully traverse the doorway
+      - -10 if mobile robot fails to traverse the doorway
+      - -dx - 0.1 (dx is mobile robot displacement in x, -0.1 for achieving less steps)
+    - door pushing:
+      - 100 if mobile robot successfully open the door and enter the room
+      - -10 if mobile robot fails to enter the room
+      - dx - 0.1 (dx, is mobile robot displacement in x, -0.1 for achieving less steps)  
+  - initial door angle: 0.1
+  - max episode steps: 60
+  - door dimension (width x depth): 0.9144 meters x 0.0698 meters
+  - number of training episode: 10000
+  - DQN:
+    - train frequency: 80 (steps)
+    - warm up episodes: 0
+    - init epsilon: 1.0
+    - terminal epsilon: 0.1
+    - learning rate: 0.001
+    - discount rate: 0.99
+    - loss function: mean squared error (MSE)
+    - batch size: 64
+    - buffer size: 10000
+  - PPO:
