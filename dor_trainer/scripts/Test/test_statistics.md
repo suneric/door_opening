@@ -27,6 +27,7 @@
 
 # Test
 ## 100 test cases
+### door pulling task
 - dqn without noise
   - success rate: 98/100
   - minimum steps: 17
@@ -35,3 +36,19 @@
   - lowest cost: 1.154 m
   - highest cost: 3.387 m
   - average cost: 1.722 m
+- ppo without noise
+  - success rate: 97/100
+  - minimum steps: 14
+  - maximum steps: 19
+  - average steps: 15
+  - lowest cost: 1.16 m
+  - highest cost: 1.483 m
+  - average cost: 1.264 m
+- ppo with noise
+  - success rate: 96/100
+  - minimum steps: 16
+  - maximum steps: 26
+  - average steps: 18
+  - lowest cost: 1.098 m
+  - highest cost: 1.542 m
+  - average cost: 1.236 m  
