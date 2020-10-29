@@ -260,23 +260,24 @@ class DoorPushTaskEnv(DoorOpenTaskEnv):
 #
 #
 class DoorTraverseTaskEnv(DoorOpenTaskEnv):
-    def __init__(self,resolution=(64,64),cam_noise=0.0, pull_agent='dqn'):
+    def __init__(self,resolution=(64,64),cam_noise=0.0,pull_policy='dqn',pull_model='dqn_noise0.0'):
         super(DoorTraverseTaskEnv, self).__init__(resolution,cam_noise)
         self.robot_x = 0.61
-        self.pull_agent = pull_agent
-        if pull_agent=='dqn':
-            self.door_pull_agent = self._load_door_pull_agent_dqn('door_pull_m1',8)
-        elif pull_agent=='ppo':
-            self.door_pull_agent = self._load_door_pull_agent_ppo(8)
-        else:
-            raise Exception("Unknown agent type")
+        self.door_pull_policy = pull_policy
+        self.door_pull_agent = self._load_door_pull_agent(pull_policy,pull_model)
 
-    def _load_door_pull_agent_dqn(self,dqn_model,act_dim):
-        agent = DQNAgent(name="door_pull",dim_img=(64,64,3),dim_act=act_dim)
-        model_path = os.path.join(sys.path[0], 'trained_models', dqn_model, 'models')
-        agent.dqn_active = tf.keras.models.load_model(model_path)
-        agent.epsilon = 0.0 # determinitic action without random choice
-        return agent
+    def _load_door_pull_agent(self,pull_policy,pull_model):
+        if pull_policy == 'ppo':
+            agent = PPOAgent(env_type='discrete',dim_obs=(64,64,3),dim_act=self.action_dimension())
+            model_path = os.path.join(sys.path[0], "policy", "door_pull", pull_model)
+            agent.actor.logits_net = tf.keras.models.load_model(model_path)
+            return agent
+        else:
+            agent = DQNAgent(name="door_pull",dim_img=(64,64,3),dim_act=self.action_dimension())
+            model_path = os.path.join(sys.path[0], 'policy', "door_pull", pull_model)
+            agent.dqn_active = tf.keras.models.load_model(model_path)
+            agent.epsilon = 0.0 # determinitic action without random choice
+            return agent
 
     def _load_door_pull_agent_ppo(self,act_dim):
         agent = PPOAgent(env_type="discrete",dim_obs=(64,64,3),dim_act=act_dim)
@@ -327,22 +328,23 @@ class DoorTraverseTaskEnv(DoorOpenTaskEnv):
         return False
 
     def _pull_door(self):
-        obs = self._get_observation()
-        img = obs.copy()
-        step_cnt = 0
-        while not self._door_is_open():
-            if self.pull_agent=='dqn':
-                act_idx = self.door_pull_agent.epsilon_greedy(img)
-            elif self.pull_agent=='ppo':
-                act_idx, _, _ = self.door_pull_agent.pi_of_a_given_s(np.expand_dims(img, axis=0))
-            self.gazebo.unpauseSim()
-            action = self.action_space[act_idx]
-            self.driver.drive(action[0],action[1])
-            rospy.sleep(0.5)
-            self.gazebo.pauseSim()
+        max_steps = 60
+        agent = self.door_pull_agent
+        if self.door_pull_policy == 'ppo':
             obs = self._get_observation()
             img = obs.copy()
-            step_cnt += 1
-            if step_cnt > 60:
-                print("door pull exceeds max steps")
-                break
+            for st in range(max_steps):
+                act, _, _ = agent.pi_of_a_given_s(np.expand_dims(img, axis=0))
+                obs,rew,done,info = self.step(act)
+                img = obs.copy()
+                if done:
+                    break
+        else: # dqn
+            obs = self._get_observation()
+            img = obs.copy()
+            for st in range(max_steps):
+                act = agent.epsilon_greedy(img)
+                obs,rew,done,info = self.step(act)
+                img = obs.copy()
+                if done:
+                    break

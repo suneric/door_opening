@@ -22,6 +22,7 @@ def get_args():
     parser.add_argument('--noise', type=float, default=0.0)
     parser.add_argument('--max_ep', type=int, default=10000)
     parser.add_argument('--max_step', type=int, default=60)
+    parser.add_argument('--pull_model', type=str ,default="dqn_noise0.0")
     return parser.parse_args()
 
 if __name__=='__main__':
@@ -31,7 +32,7 @@ if __name__=='__main__':
     num_episodes = args.max_ep
     num_steps = args.max_step
     # instantiate env
-    env = DoorTraverseTaskEnv(resolution=(64,64),cam_noise=args.noise)
+    env = DoorTraverseTaskEnv(resolution=(64,64),cam_noise=args.noise, pull_policy='dqn', pull_model=args.pull_model)
     act_dim = env.action_dimension()
 
     train_freq = 80

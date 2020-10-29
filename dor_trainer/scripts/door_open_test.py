@@ -88,7 +88,7 @@ def plot_trajectorty(t):
     line4.set_label('trajectory of mobile robot')
     line5, = plt.plot(np.matrix(cam_t)[:,0],np.matrix(cam_t)[:,1], linewidth=1.0, color='red',linestyle='dashed')
     line5.set_label('trajectory of sidebar')
-    plt.legend(loc='upper right')
+    #plt.legend(loc='upper right')
     plt.show()
 
 # a simple cost evaluation based on the end of the bar where camera placed at
@@ -150,7 +150,7 @@ def dqn_push_test(episode,model,noise):
     return run_dqn_test(episode,env,agent,60)
 
 def dqn_traverse_test(episode,model,noise):
-    env = DoorTraverseTaskEnv(resolution=(64,64),cam_noise=noise)
+    env = DoorTraverseTaskEnv(resolution=(64,64),cam_noise=noise,pull_policy='dqn',pull_model=model)
     act_dim = env.action_dimension()
     agent = DQNAgent(name='door_traverse',dim_img=(64,64,3),dim_act=act_dim)
     model_path = os.path.join(sys.path[0], "policy", "door_traverse", model)
@@ -192,6 +192,22 @@ def ppo_pull_test(episode,model,noise):
     agent.actor.logits_net = tf.keras.models.load_model(model_path)
     return run_ppo_test(episode,env,agent,60)
 
+def ppo_push_test(episode,model,noise):
+    env = DoorPushTaskEnv(resolution=(64,64),cam_noise=noise)
+    act_dim = env.action_dimension()
+    agent = PPOAgent(env_type='discrete',dim_obs=(64,64,3),dim_act=act_dim)
+    model_path = os.path.join(sys.path[0], "policy", "door_push", model)
+    agent.actor.logits_net = tf.keras.models.load_model(model_path)
+    return run_ppo_test(episode,env,agent,60)
+
+def ppo_traverse_test(episode,model,noise):
+    env = DoorTraverseTaskEnv(resolution=(64,64),cam_noise=noise,pull_policy='ppo',pull_model=model)
+    act_dim = env.action_dimension()
+    agent = DQNAgent(name='door_traverse',dim_img=(64,64,3),dim_act=act_dim)
+    model_path = os.path.join(sys.path[0], "policy", "door_traverse", model)
+    agent.dqn_active = tf.keras.models.load_model(model_path)
+    agent.epsilon = 0.0
+    return run_dqn_test(episode,env,agent,60)
 
 ###############################################################################
 # main loop
@@ -222,19 +238,25 @@ if __name__ == "__main__":
     elif args.policy == "ppo":
         if args.task == "pull":
             trajectories = ppo_pull_test(args.eps,args.model,args.noise)
+        elif args.task == "push":
+            trajectories = ppo_push_test(args.eps,args.model,args.noise)
+        elif args.task == "traverse":
+            trajectories = ppo_traverse_test(args.eps,args.model,args.noise)
 
     # trajectory analysis
     trajectory_steps = [len(i)-1 for i in trajectories]
     average_steps = int(sum(trajectory_steps)/len(trajectory_steps))
-    shortest = min(trajectories, key=len)
-    longest = max(trajectories, key=len)
     trajectory_costs = [round(trajectory_cost(i),3) for i in trajectories]
     print("====================")
     print("Success rate", len(trajectory_steps),"/", args.eps)
-    print("Average steps", average_steps, "Average Cost", round(sum(trajectory_costs)/len(trajectory_costs),3), "meters")
-    print("Shortest steps", len(shortest), "Cost", min(trajectory_costs), "meters")
-    print("Longest steps", len(longest), "Cost", max(trajectory_costs), "meters")
+    print("Average steps", average_steps)
+    print("Minimum steps", min(trajectory_steps))
+    print("Maximum steps", max(trajectory_steps))
+    print("Average Cost", sum(trajectory_costs)/len(trajectory_costs), "meters")
+    print("Lowest Cost",  min(trajectory_costs), "meters")
+    print("Highest Cost", max(trajectory_costs), "meters")
     print("====================")
 
-    # plot shortest trajectory
-    plot_trajectorty(shortest)
+    # plot trajectory with lowest cost
+    lowest_index = trajectory_costs.index(min(trajectory_costs))
+    plot_trajectorty(trajectories[lowest_index])

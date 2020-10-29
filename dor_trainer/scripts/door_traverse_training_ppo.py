@@ -23,12 +23,13 @@ def get_args():
     parser.add_argument('--noise', type=float, default=0.0)
     parser.add_argument('--max_ep', type=int, default=10000)
     parser.add_argument('--max_step', type=int, default=60)
+    parser.add_argument('--pull_model', type=str ,default="ppo_noise0.0")
     return parser.parse_args()
 
 if __name__=='__main__':
     args = get_args()
     rospy.init_node('ppo_train', anonymous=True, log_level=rospy.INFO)
-    env = DoorTraverseTaskEnv(resolution=(64,64), cam_noise=args.noise, pull_agent='ppo')
+    env = DoorTraverseTaskEnv(resolution=(64,64), cam_noise=args.noise, pull_policy='ppo',pull_model=args.pull_model)
     dim_obs = (64,64,3)
     dim_act = env.action_dimension()
     agent = PPOAgent(
