@@ -28,27 +28,43 @@
 # Test
 ## 100 test cases
 ### door pulling task
-- dqn without noise
-  - success rate: 98/100
-  - minimum steps: 17
-  - maximum steps: 54
-  - average steps: 25
-  - lowest cost: 1.154 m
-  - highest cost: 3.387 m
-  - average cost: 1.722 m
-- ppo without noise
-  - success rate: 97/100
-  - minimum steps: 14
-  - maximum steps: 19
-  - average steps: 15
-  - lowest cost: 1.16 m
-  - highest cost: 1.483 m
-  - average cost: 1.264 m
-- ppo with noise
-  - success rate: 96/100
-  - minimum steps: 16
-  - maximum steps: 26
-  - average steps: 18
-  - lowest cost: 1.098 m
-  - highest cost: 1.542 m
-  - average cost: 1.236 m  
+- training performance
+![](training_pull.svg)
+
+- policy test
+|models |success rate |average steps |minimum steps |maximum steps |average cost |lowest cost | highest cost |
+|dqn without noise | 98% | 25 | 17 | 54 | 1.722 m | 1.154 m | 3.387 m |
+|ppo without noise | 97% | 15 | 14 | 19 | 1.264 m | 1.160 m | 1.483 m |
+|ppo with noise    | 96% | 18 | 16 | 26 | 1.236 m | 1.098 m | 1.542 m |
+
+- trajectory cost
+| dqn without noise | ppo without noise | ppo with noise |
+|![](pull_dqn_no_noise.png) | ![](pull_ppo_no_noise.png) | ![](pull_ppo_noise.png) |
+
+### door traversing task
+- training performance
+![](training_traverse.svg)
+
+- policy test
+|models |success rate |average steps |minimum steps |maximum steps |average cost |lowest cost | highest cost |
+|dqn without noise | 84% | 25 | 17 | 42 | 1.965 m | 1.344 m | 3.046 m |
+|ppo without noise | | | | | | | |
+|ppo with noise    | | | | | | | |
+
+- trajectories
+| dqn without noise | ppo without noise | ppo with noise |
+|![](traverse_dqn_no_noise.png) |  |  |
+
+### door pushing task
+- training performance
+![](training_push.svg)
+
+- policy test
+|models |success rate |average steps |minimum steps |maximum steps |average cost |lowest cost | highest cost |
+|dqn without noise | | | | | | | |
+|ppo without noise | 100% | 17 | 16 | 20 | 1.964 m | 1.762 m | 2.217 m |
+|ppo with noise    | 99% | 17 | 16 | 21 | 1.946 m | 1.788 m | 2.090 m |
+
+- trajectories
+| dqn without noise | ppo without noise | ppo with noise |
+|  | ![](push_ppo_no_noise.png) | ![](push_ppo_noise.png) |
