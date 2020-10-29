@@ -7,7 +7,7 @@ import rospy
 from tf.transformations import quaternion_from_euler, euler_from_matrix
 from .door_open_task_env import DoorOpenTaskEnv
 from agents.dqn_conv import DQNAgent
-from agents.ppo_conv import PPOAgent, PPOBuffer
+from agents.ppo_conv import PPOAgent
 import sys
 import os
 import tensorflow as tf
@@ -278,6 +278,12 @@ class DoorTraverseTaskEnv(DoorOpenTaskEnv):
             agent.dqn_active = tf.keras.models.load_model(model_path)
             agent.epsilon = 0.0 # determinitic action without random choice
             return agent
+
+    def _load_door_pull_agent_ppo(self,act_dim):
+        agent = PPOAgent(env_type="discrete",dim_obs=(64,64,3),dim_act=act_dim)
+        model_path = os.path.join(sys.path[0], 'policy', 'door_pull', 'ppo_noise0.0', 'logits_net', '157')
+        agent.actor.logits_net = tf.keras.models.load_model(model_path)
+        return agent
 
     def _set_init(self):
         self.driver.stop()
