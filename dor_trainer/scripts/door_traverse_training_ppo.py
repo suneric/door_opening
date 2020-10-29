@@ -28,7 +28,7 @@ def get_args():
 if __name__=='__main__':
     args = get_args()
     rospy.init_node('ppo_train', anonymous=True, log_level=rospy.INFO)
-    env = DoorTraverseTaskEnv(resolution=(64,64), cam_noise=args.noise)
+    env = DoorTraverseTaskEnv(resolution=(64,64), cam_noise=args.noise, pull_agent='ppo')
     dim_obs = (64,64,3)
     dim_act = env.action_dimension()
     agent = PPOAgent(
