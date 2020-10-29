@@ -150,7 +150,7 @@ def dqn_push_test(episode,model,noise):
     return run_dqn_test(episode,env,agent,60)
 
 def dqn_traverse_test(episode,model,noise):
-    env = DoorTraverseTaskEnv(resolution=(64,64),cam_noise=noise)
+    env = DoorTraverseTaskEnv(resolution=(64,64),cam_noise=noise,pull_policy='dqn',pull_model=model)
     act_dim = env.action_dimension()
     agent = DQNAgent(name='door_traverse',dim_img=(64,64,3),dim_act=act_dim)
     model_path = os.path.join(sys.path[0], "policy", "door_traverse", model)
@@ -192,6 +192,22 @@ def ppo_pull_test(episode,model,noise):
     agent.actor.logits_net = tf.keras.models.load_model(model_path)
     return run_ppo_test(episode,env,agent,60)
 
+def ppo_push_test(episode,model,noise):
+    env = DoorPushTaskEnv(resolution=(64,64),cam_noise=noise)
+    act_dim = env.action_dimension()
+    agent = PPOAgent(env_type='discrete',dim_obs=(64,64,3),dim_act=act_dim)
+    model_path = os.path.join(sys.path[0], "policy", "door_push", model)
+    agent.actor.logits_net = tf.keras.models.load_model(model_path)
+    return run_ppo_test(episode,env,agent,60)
+
+def ppo_traverse_test(episode,model,noise):
+    env = DoorTraverseTaskEnv(resolution=(64,64),cam_noise=noise,pull_policy='ppo',pull_model=model)
+    act_dim = env.action_dimension()
+    agent = DQNAgent(name='door_traverse',dim_img=(64,64,3),dim_act=act_dim)
+    model_path = os.path.join(sys.path[0], "policy", "door_traverse", model)
+    agent.dqn_active = tf.keras.models.load_model(model_path)
+    agent.epsilon = 0.0
+    return run_dqn_test(episode,env,agent,60)
 
 ###############################################################################
 # main loop
@@ -222,6 +238,10 @@ if __name__ == "__main__":
     elif args.policy == "ppo":
         if args.task == "pull":
             trajectories = ppo_pull_test(args.eps,args.model,args.noise)
+        elif args.task == "push":
+            trajectories = ppo_push_test(args.eps,args.model,args.noise)
+        elif args.task == "traverse":
+            trajectories = ppo_traverse_test(args.eps,args.model,args.noise)
 
     # trajectory analysis
     trajectory_steps = [len(i)-1 for i in trajectories]
