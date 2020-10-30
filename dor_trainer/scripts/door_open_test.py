@@ -208,21 +208,21 @@ def ppo_push_test(episode,actor_model,critic_model,noise):
     env = DoorPushTaskEnv(resolution=(64,64),cam_noise=noise)
     act_dim = env.action_dimension()
     agent = PPOAgent(env_type='discrete',dim_obs=(64,64,3),dim_act=act_dim)
-    actor_path = os.path.join(sys.path[0], "policy", "door_pull", actor_model)
-    critic_path = os.path.join(sys.path[0], "policy", "door_pull", critic_model)
+    actor_path = os.path.join(sys.path[0], "policy", "door_push", actor_model)
+    critic_path = os.path.join(sys.path[0], "policy", "door_push", critic_model)
     agent.actor.logits_net = tf.keras.models.load_model(actor_path)
     agent.critic.val_net = tf.keras.models.load_model(critic_path)
     return run_ppo_test(episode,env,agent,60)
 
-def ppo_traverse_test(episode,actor_model,critic_model,noise):
+def ppo_traverse_test(episode,actor_model,critic_model,noise,model):
     env = DoorTraverseTaskEnv(resolution=(64,64),cam_noise=noise,pull_policy='ppo',pull_model=model)
     act_dim = env.action_dimension()
     agent = PPOAgent(env_type='discrete',dim_obs=(64,64,3),dim_act=act_dim)
-    actor_path = os.path.join(sys.path[0], "policy", "door_pull", actor_model)
-    critic_path = os.path.join(sys.path[0], "policy", "door_pull", critic_model)
+    actor_path = os.path.join(sys.path[0], "policy", "door_traverse", actor_model)
+    critic_path = os.path.join(sys.path[0], "policy", "door_traverse", critic_model)
     agent.actor.logits_net = tf.keras.models.load_model(actor_path)
     agent.critic.val_net = tf.keras.models.load_model(critic_path)
-    return run_dqn_test(episode,env,agent,60)
+    return run_ppo_test(episode,env,agent,60)
 
 ###############################################################################
 # main loop
@@ -258,7 +258,7 @@ if __name__ == "__main__":
         elif args.task == "push":
             trajectories, values = ppo_push_test(args.eps,args.actor_model,args.critic_model,args.noise)
         elif args.task == "traverse":
-            trajectories, values = ppo_traverse_test(args.eps,args.actor_model,args.critic_model,args.noise)
+            trajectories, values = ppo_traverse_test(args.eps,args.actor_model,args.critic_model,args.noise,args.model)
 
     # trajectory analysis
     trajectory_steps = [len(i)-1 for i in trajectories]

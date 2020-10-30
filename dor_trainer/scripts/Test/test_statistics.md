@@ -51,11 +51,11 @@
 
 - policy test
 
-|models |success rate |average steps |minimum steps |maximum steps |average cost |lowest cost | highest cost |
-|:---|:---:|:---:|:---:|:---:|:---:|:---:|---:|
-|dqn without noise | 84% | 25 | 17 | 42 | 1.965 m | 1.344 m | 3.046 m |
-|ppo without noise | | | | | | | |
-|ppo with noise    | | | | | | | |
+|models |success rate |average steps |minimum steps |maximum steps |average cost |lowest cost | highest cost | average value |lowest value |highest value|
+|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
+|dqn without noise | 74% | 26 | 17 | 48 | 1.997 m | 1.378 m | 3.241 m | 95.922 | 68.331 | 115.080 |
+|ppo without noise | | | | | | | | | | |
+|ppo with noise    | 87% | 23 | 17 | 47 | 1.953 m | 1.525 m | 2.906 m | 92.125 | 42.564 | 105.229 |
 
 - trajectories
 
@@ -69,11 +69,11 @@
 
 - policy test
 
-|models |success rate |average steps |minimum steps |maximum steps |average cost |lowest cost | highest cost |
-|:---|:---:|:---:|:---:|:---:|:---:|:---:|---:|
-|dqn without noise | | | | | | | |
-|ppo without noise | 100% | 17 | 16 | 20 | 1.964 m | 1.762 m | 2.217 m |
-|ppo with noise    | 99% | 17 | 16 | 21 | 1.946 m | 1.788 m | 2.090 m |
+|models |success rate |average steps |minimum steps |maximum steps |average cost |lowest cost | highest cost |average value |lowest value |highest value|
+|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
+|dqn without noise | 99% | 18 | 16 | 20 | 1.905 m | 1.732 m| 2.064 m | 75.001 | 75.001 | 75.001|
+|ppo without noise | 98% | 17 | 16 | 19 | 1.953 m | 1.781 m | 2.295 m | 98.263 | 93.044 | 102.513 |
+|ppo with noise    | 98% | 17 | 17 | 21 | 1.937 m | 1.840 m | 2.076 m | 98.516 | 93.192 | 106.429 |
 
 - trajectories
 
