@@ -110,13 +110,17 @@ def trajectory_cost(t):
 def run_dqn_test(episode,env,agent,max_steps):
     success_counter = 0
     trajectories = []
+    values = []
     for ep in range(episode):
         trajectory = []
+        vals = []
         obs, info = env.reset()
         trajectory.append(info)
         img = obs.copy()
         for st in range(max_steps):
             act = agent.epsilon_greedy(img)
+            v = np.max(agent.dqn_active(np.expand_dims(img, axis=0)))
+            vals.append(v)
             obs,rew,done,info = env.step(act)
             trajectory.append(info)
             img = obs.copy()
@@ -126,10 +130,11 @@ def run_dqn_test(episode,env,agent,max_steps):
         if env.success:
             success_counter += 1
             trajectories.append(trajectory)
+            values.append(vals)
 
         print("Succeeded: {} / {}".format(success_counter,ep+1))
 
-    return trajectories
+    return trajectories, values
 
 def dqn_pull_test(episode,model,noise):
     env = DoorPullTaskEnv(resolution=(64,64),cam_noise=noise)
@@ -163,13 +168,17 @@ def dqn_traverse_test(episode,model,noise):
 def run_ppo_test(episode,env,agent,max_steps):
     success_counter = 0
     trajectories = []
+    values = []
     for ep in range(episode):
         trajectory = []
+        vals = []
         obs, info = env.reset()
         trajectory.append(info)
         done = False
         for st in range(max_steps):
             act, _, _ = agent.pi_of_a_given_s(np.expand_dims(obs, axis=0))
+            v = np.squeeze(agent.critic.val_net(np.expand_dims(obs, axis=0)))
+            vals.append(v)
             n_obs, rew, done, info = env.step(act)
             trajectory.append(info)
             obs = n_obs.copy()
@@ -179,34 +188,40 @@ def run_ppo_test(episode,env,agent,max_steps):
         if env.success:
             success_counter += 1
             trajectories.append(trajectory)
+            values.append(vals)
 
         print("Succeeded: {} / {}".format(success_counter,ep+1))
 
-    return trajectories
+    return trajectories, values
 
-def ppo_pull_test(episode,model,noise):
+def ppo_pull_test(episode,actor_model,critic_model,noise):
     env = DoorPullTaskEnv(resolution=(64,64),cam_noise=noise)
     act_dim = env.action_dimension()
     agent = PPOAgent(env_type='discrete',dim_obs=(64,64,3),dim_act=act_dim)
-    model_path = os.path.join(sys.path[0], "policy", "door_pull", model)
-    agent.actor.logits_net = tf.keras.models.load_model(model_path)
+    actor_path = os.path.join(sys.path[0], "policy", "door_pull", actor_model)
+    critic_path = os.path.join(sys.path[0], "policy", "door_pull", critic_model)
+    agent.actor.logits_net = tf.keras.models.load_model(actor_path)
+    agent.critic.val_net = tf.keras.models.load_model(critic_path)
     return run_ppo_test(episode,env,agent,60)
 
-def ppo_push_test(episode,model,noise):
+def ppo_push_test(episode,actor_model,critic_model,noise):
     env = DoorPushTaskEnv(resolution=(64,64),cam_noise=noise)
     act_dim = env.action_dimension()
     agent = PPOAgent(env_type='discrete',dim_obs=(64,64,3),dim_act=act_dim)
-    model_path = os.path.join(sys.path[0], "policy", "door_push", model)
-    agent.actor.logits_net = tf.keras.models.load_model(model_path)
+    actor_path = os.path.join(sys.path[0], "policy", "door_pull", actor_model)
+    critic_path = os.path.join(sys.path[0], "policy", "door_pull", critic_model)
+    agent.actor.logits_net = tf.keras.models.load_model(actor_path)
+    agent.critic.val_net = tf.keras.models.load_model(critic_path)
     return run_ppo_test(episode,env,agent,60)
 
-def ppo_traverse_test(episode,model,noise):
+def ppo_traverse_test(episode,actor_model,critic_model,noise):
     env = DoorTraverseTaskEnv(resolution=(64,64),cam_noise=noise,pull_policy='ppo',pull_model=model)
     act_dim = env.action_dimension()
-    agent = DQNAgent(name='door_traverse',dim_img=(64,64,3),dim_act=act_dim)
-    model_path = os.path.join(sys.path[0], "policy", "door_traverse", model)
-    agent.dqn_active = tf.keras.models.load_model(model_path)
-    agent.epsilon = 0.0
+    agent = PPOAgent(env_type='discrete',dim_obs=(64,64,3),dim_act=act_dim)
+    actor_path = os.path.join(sys.path[0], "policy", "door_pull", actor_model)
+    critic_path = os.path.join(sys.path[0], "policy", "door_pull", critic_model)
+    agent.actor.logits_net = tf.keras.models.load_model(actor_path)
+    agent.critic.val_net = tf.keras.models.load_model(critic_path)
     return run_dqn_test(episode,env,agent,60)
 
 ###############################################################################
@@ -218,6 +233,8 @@ def get_args():
     parser.add_argument('--eps', type=int, default=10) # test episode
     parser.add_argument('--model',type=str, default="dqn_noise0.0") # model folder in folder "policy"
     parser.add_argument('--noise', type=float, default=0.0) # noise variance 0.02
+    parser.add_argument('--actor_model',type=str, default="ppo_noise0.0/logits_net/150") # ppo model in folder "policy"
+    parser.add_argument('--critic_model',type=str, default="ppo_noise0.0/val_net/150") # ppo model in folder "policy"
     return parser.parse_args()
 
 np.random.seed(7)
@@ -230,23 +247,26 @@ if __name__ == "__main__":
     trajectories = []
     if args.policy == "dqn":
         if args.task == "pull":
-            trajectories = dqn_pull_test(args.eps,args.model,args.noise)
+            trajectories, values = dqn_pull_test(args.eps,args.model,args.noise)
         elif args.task == "push":
-            trajectories = dqn_push_test(args.eps,args.model,args.noise)
+            trajectories, values = dqn_push_test(args.eps,args.model,args.noise)
         elif args.task == "traverse":
-            trajectories = dqn_traverse_test(args.eps,args.model,args.noise)
+            trajectories, values = dqn_traverse_test(args.eps,args.model,args.noise)
     elif args.policy == "ppo":
         if args.task == "pull":
-            trajectories = ppo_pull_test(args.eps,args.model,args.noise)
+            trajectories, values = ppo_pull_test(args.eps,args.actor_model,args.critic_model,args.noise)
         elif args.task == "push":
-            trajectories = ppo_push_test(args.eps,args.model,args.noise)
+            trajectories, values = ppo_push_test(args.eps,args.actor_model,args.critic_model,args.noise)
         elif args.task == "traverse":
-            trajectories = ppo_traverse_test(args.eps,args.model,args.noise)
+            trajectories, values = ppo_traverse_test(args.eps,args.actor_model,args.critic_model,args.noise)
 
     # trajectory analysis
     trajectory_steps = [len(i)-1 for i in trajectories]
     average_steps = int(sum(trajectory_steps)/len(trajectory_steps))
     trajectory_costs = [round(trajectory_cost(i),3) for i in trajectories]
+    average_values = [sum(vals)/len(vals) for vals in values]
+    highest_values = [max(vals) for vals in values]
+    lowest_values = [min(vals) for vals in values]
     print("====================")
     print("Success rate", len(trajectory_steps),"/", args.eps)
     print("Average steps", average_steps)
@@ -255,6 +275,9 @@ if __name__ == "__main__":
     print("Average Cost", sum(trajectory_costs)/len(trajectory_costs), "meters")
     print("Lowest Cost",  min(trajectory_costs), "meters")
     print("Highest Cost", max(trajectory_costs), "meters")
+    print("Average Value", sum(average_values)/len(average_values))
+    print("Lowest Value",  min(lowest_values))
+    print("Highest Value", max(highest_values))
     print("====================")
 
     # plot trajectory with lowest cost
