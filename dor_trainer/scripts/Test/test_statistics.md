@@ -25,24 +25,24 @@
 - Wall color: Gazebo/White
 
 
-# Test
-## 100 test cases
+# Test (100 random test cases)
 ### door pulling task
 - training performance
 ![](training_pull.svg)
 
 - policy test
+  - the cost is roughly estimated by the total displacement of the end of the side bar required to complete the task
 
-|models |success rate |average steps |minimum steps |maximum steps |average cost |lowest cost | highest cost |
-|:---|:---:|:---:|:---:|:---:|:---:|:---:|---:|
-|dqn without noise | 98% | 25 | 17 | 54 | 1.722 m | 1.154 m | 3.387 m |
-|ppo without noise | 97% | 15 | 14 | 19 | 1.264 m | 1.160 m | 1.483 m |
-|ppo with noise    | 96% | 18 | 16 | 26 | 1.236 m | 1.098 m | 1.542 m |
+|models |success rate |average steps |minimum steps |maximum steps |average cost |lowest cost | highest cost |average value |lowest value |highest value|
+|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
+|dqn without noise | 92% | 26 | 18 | 56 | 1.775 m | 1.233 m | 3.667 m | 100.423 | 46.279 | 118.414 |
+|ppo without noise | 100% | 15 | 14 | 19 | 1.265 m | 1.159 m | 1.356 m | 98.492 | 84.670 | 104.381 |
+|ppo with noise    | 94% | 18 | 16 | 29 | 1.253 m | 1.108 m | 1.480 m | 4.923 | 4.923 | 4.923 |
 
-- trajectory cost
+- shortest trajectories
 
 | dqn without noise | ppo without noise | ppo with noise |
-|:---|:---:|---:|
+|:---:|:---:|:---:|
 |![](pull_dqn_no_noise.png) | ![](pull_ppo_no_noise.png) | ![](pull_ppo_noise.png) |
 
 ### door traversing task
@@ -54,14 +54,14 @@
 |models |success rate |average steps |minimum steps |maximum steps |average cost |lowest cost | highest cost | average value |lowest value |highest value|
 |:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
 |dqn without noise | 74% | 26 | 17 | 48 | 1.997 m | 1.378 m | 3.241 m | 95.922 | 68.331 | 115.080 |
-|ppo without noise | | | | | | | | | | |
+|ppo without noise | 95% | 23 | 14 | 42 | 1.941 m | 1.263 m | 3.297 m | 91.282 | -3.375 | 135.198 |
 |ppo with noise    | 87% | 23 | 17 | 47 | 1.953 m | 1.525 m | 2.906 m | 92.125 | 42.564 | 105.229 |
 
-- trajectories
+- shortest trajectories
 
 | dqn without noise | ppo without noise | ppo with noise |
-|:---|:---:|---:|
-|![](traverse_dqn_no_noise.png) |  |  |
+|:---:|:---:|:---:|
+|![](traverse_dqn_no_noise.png) | ![](traverse_ppo_no_noise.png) |  ![](traverse_ppo_noise.png)|
 
 ### door pushing task
 - training performance
@@ -75,8 +75,8 @@
 |ppo without noise | 98% | 17 | 16 | 19 | 1.953 m | 1.781 m | 2.295 m | 98.263 | 93.044 | 102.513 |
 |ppo with noise    | 98% | 17 | 17 | 21 | 1.937 m | 1.840 m | 2.076 m | 98.516 | 93.192 | 106.429 |
 
-- trajectories
+- shortest trajectories
 
 |dqn without noise |ppo without noise |ppo with noise |
-|:---|:---:|---:|
-| link missing | ![](push_ppo_no_noise.png) | ![](push_ppo_noise.png) |
+|:---:|:---:|:---:|
+| ![](push_dqn_no_noise.png) | ![](push_ppo_no_noise.png) | ![](push_ppo_noise.png) |
