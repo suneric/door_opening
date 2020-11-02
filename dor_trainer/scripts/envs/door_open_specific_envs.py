@@ -40,6 +40,7 @@ class DoorPullAndTraverseTaskEnv(DoorOpenTaskEnv):
       self.driver.stop()
       self.step_cnt = 0
       self.stage = 'pull'
+      self.pull_success = False
       self.success = False
 
     def _random_init_mobile_robot(self):
@@ -71,6 +72,7 @@ class DoorPullAndTraverseTaskEnv(DoorOpenTaskEnv):
       self.step_cnt += 1
       self.success = self._robot_is_out()
       if self.stage == 'pull' and self._door_is_open():
+          self.pull_success = True
           self.stage = 'traverse'
 
     def _is_done(self):
@@ -88,10 +90,13 @@ class DoorPullAndTraverseTaskEnv(DoorOpenTaskEnv):
     def _compute_reward(self):
         # divid to two stages, pull and traverse with different rewarding function
         reward = 0
+        # only give one time reward for pull success
+        if self.pull_success:
+            reward = 100
+            self.pull_success = False
+
         if self.stage == 'pull':
-            if self._door_is_open():
-                reward = 100
-            elif self._door_pull_failed():
+            if self._door_pull_failed():
                 reward = -10
             else:
                 door_r, door_a = self._door_position()
