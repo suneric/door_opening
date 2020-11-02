@@ -25,9 +25,9 @@ class ModelSaver:
             net.save(model_path)
             print("save trained model:", model_path)
 
-class DoorPullAndTraverseEnv(DoorOpenTaskEnv):
+class DoorPullAndTraverseTaskEnv(DoorOpenTaskEnv):
     def __init__(self,resolution=(64,64), cam_noise=0.0):
-        super(DoorPullAndTraverseEnv, self).__init__(resolution,cam_noise)
+        super(DoorPullAndTraverseTaskEnv, self).__init__(resolution,cam_noise)
         self.door_angle = 0.1
         self.robot_x = 0.61
 

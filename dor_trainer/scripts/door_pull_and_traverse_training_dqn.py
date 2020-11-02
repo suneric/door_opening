@@ -9,7 +9,7 @@ import logging
 logging.basicConfig(format='%(asctime)s %(message)s',level=logging.INFO)
 
 from agents.dqn_conv import DQNAgent
-from envs.door_open_specific_envs import DoorPullAndTraverseEnv, ModelSaver
+from envs.door_open_specific_envs import DoorPullAndTraverseTaskEnv, ModelSaver
 import rospy
 import tensorflow as tf
 import argparse
@@ -31,7 +31,7 @@ if __name__=='__main__':
     num_episodes = args.max_ep
     num_steps = args.max_step
     # instantiate env
-    env = DoorPullAndTraverseEnv(resolution=(64,64),cam_noise=args.noise)
+    env = DoorPullAndTraverseTaskEnv(resolution=(64,64),cam_noise=args.noise)
     act_dim = env.action_dimension()
 
     train_freq = 80
