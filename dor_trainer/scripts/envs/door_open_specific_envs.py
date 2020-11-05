@@ -40,7 +40,6 @@ class DoorPullAndTraverseTaskEnv(DoorOpenTaskEnv):
       self.driver.stop()
       self.step_cnt = 0
       self.stage = 'pull'
-      self.pull_success = False
       self.success = False
 
     def _random_init_mobile_robot(self):
@@ -70,40 +69,35 @@ class DoorPullAndTraverseTaskEnv(DoorOpenTaskEnv):
       self.driver.drive(action[0],action[1])
       rospy.sleep(0.5)
       self.step_cnt += 1
-      self.success = self._robot_is_out()
-      if self.stage == 'pull' and self._door_is_open():
-          self.pull_success = True
-          self.stage = 'traverse'
 
     def _is_done(self):
+        done = False
         if self.stage == 'pull':
             if self._door_pull_failed():
-                return True
-            else:
-                return False
+                done = True
+            elif self._door_is_open(): # change stage
+                self.stage = 'traverse'
         else:
+            self.success = self._robot_is_out()
             if self._door_traverse_failed() or self._robot_is_out():
-                return True
-            else:
-                return False
+                done = True
+
+        return done
 
     def _compute_reward(self):
         # divid to two stages, pull and traverse with different rewarding function
         reward = 0
-        # only give one time reward for pull success
-        if self.pull_success:
-            reward = 100
-            self.pull_success = False
-
         if self.stage == 'pull':
-            if self._door_pull_failed():
+            if self._door_is_open():
+                reward = 100
+            elif self._door_pull_failed():
                 reward = -10
             else:
                 door_r, door_a = self._door_position()
                 delta_a = door_a-self.door_angle
                 reward = delta_a*10 - 0.1
         else:
-            if self.success:
+            if self._robot_is_out():
                 reward = 100
             elif self._door_traverse_failed():
                 reward = -10
@@ -174,17 +168,18 @@ class DoorPullTaskEnv(DoorOpenTaskEnv):
       self.driver.drive(action[0],action[1])
       rospy.sleep(0.5)
       self.step_cnt += 1
-      self.success = self._door_is_open()
 
     def _is_done(self):
+      done = False
       if self._door_pull_failed() or self._door_is_open():
-          return True
-      else:
-          return False
+          done = True
+
+      self.success = self._door_is_open()
+      return done
 
     def _compute_reward(self):
       reward = 0
-      if self.success:
+      if self._door_is_open():
           reward = 100
       elif self._door_pull_failed():
           reward = -10
@@ -234,13 +229,14 @@ class DoorPushTaskEnv(DoorOpenTaskEnv):
         self.driver.drive(action[0],action[1])
         rospy.sleep(0.5)
         self.step_cnt += 1
-        self.success = self._robot_is_in()
 
     def _is_done(self):
+        done = False
+        self.success = self._robot_is_in()
         if self._door_push_failed() or self._robot_is_in():
-            return True
-        else:
-            return False
+            done = True
+
+        return done
 
     def _compute_reward(self):
         reward = 0
@@ -305,13 +301,15 @@ class DoorTraverseTaskEnv(DoorOpenTaskEnv):
         self.driver.drive(action[0],action[1])
         rospy.sleep(0.5)
         self.step_cnt += 1
-        self.success = self._robot_is_out()
+
 
     def _is_done(self):
+        done = False
+        self.success = self._robot_is_out()
         if self._door_traverse_failed() or self._robot_is_out():
-            return True
-        else:
-            return False
+            done = True
+
+        return done
 
     def _compute_reward(self):
         reward = 0
