@@ -260,26 +260,29 @@ if __name__ == "__main__":
         elif args.task == "traverse":
             trajectories, values = ppo_traverse_test(args.eps,args.actor_model,args.critic_model,args.noise,args.model)
 
-    # trajectory analysis
-    trajectory_steps = [len(i)-1 for i in trajectories]
-    average_steps = int(sum(trajectory_steps)/len(trajectory_steps))
-    trajectory_costs = [round(trajectory_cost(i),3) for i in trajectories]
-    average_values = [sum(vals)/len(vals) for vals in values]
-    highest_values = [max(vals) for vals in values]
-    lowest_values = [min(vals) for vals in values]
-    print("====================")
-    print("Success rate", len(trajectory_steps),"/", args.eps)
-    print("Average steps", average_steps)
-    print("Minimum steps", min(trajectory_steps))
-    print("Maximum steps", max(trajectory_steps))
-    print("Average Cost", sum(trajectory_costs)/len(trajectory_costs), "meters")
-    print("Lowest Cost",  min(trajectory_costs), "meters")
-    print("Highest Cost", max(trajectory_costs), "meters")
-    print("Average Value", sum(average_values)/len(average_values))
-    print("Lowest Value",  min(lowest_values))
-    print("Highest Value", max(highest_values))
-    print("====================")
+    if len(trajectories) == 0:
+        print("no successful test");
+    else:
+        # trajectory analysis
+        trajectory_steps = [len(i)-1 for i in trajectories]
+        average_steps = int(sum(trajectory_steps)/len(trajectory_steps))
+        trajectory_costs = [round(trajectory_cost(i),3) for i in trajectories]
+        average_values = [sum(vals)/len(vals) for vals in values]
+        highest_values = [max(vals) for vals in values]
+        lowest_values = [min(vals) for vals in values]
+        print("====================")
+        print("Success rate", len(trajectory_steps),"/", args.eps)
+        print("Average steps", average_steps)
+        print("Minimum steps", min(trajectory_steps))
+        print("Maximum steps", max(trajectory_steps))
+        print("Average Cost", sum(trajectory_costs)/len(trajectory_costs), "meters")
+        print("Lowest Cost",  min(trajectory_costs), "meters")
+        print("Highest Cost", max(trajectory_costs), "meters")
+        print("Average Value", sum(average_values)/len(average_values))
+        print("Lowest Value",  min(lowest_values))
+        print("Highest Value", max(highest_values))
+        print("====================")
 
-    # plot trajectory with lowest cost
-    lowest_index = trajectory_costs.index(min(trajectory_costs))
-    plot_trajectorty(trajectories[lowest_index])
+        # plot trajectory with lowest cost
+        lowest_index = trajectory_costs.index(min(trajectory_costs))
+        plot_trajectorty(trajectories[lowest_index])
