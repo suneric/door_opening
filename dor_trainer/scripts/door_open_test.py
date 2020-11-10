@@ -23,7 +23,7 @@ import math
 
 from agents.dqn_conv import DQNAgent
 from agents.ppo_conv import PPOAgent
-from envs.door_open_specific_envs import DoorPullTaskEnv, DoorPushTaskEnv, DoorTraverseTaskEnv
+from envs.door_open_specific_envs import DoorPullTaskEnv, DoorPushTaskEnv, DoorTraverseTaskEnv, DoorPullAndTraverseTaskEnv
 
 # plot trajectory which contains a sequence of pose of robot and door
 # info {
@@ -163,6 +163,15 @@ def dqn_traverse_test(episode,model,noise):
     agent.epsilon = 0.0
     return run_dqn_test(episode,env,agent,60)
 
+def dqn_pull_traverse_test(episode,model,noise):
+    env = DoorPullAndTraverseTaskEnv(resolution=(64,64),cam_noise=noise)
+    act_dim = env.action_dimension()
+    agent = DQNAgent(name='door_pull',dim_img=(64,64,3),dim_act=act_dim)
+    model_path = os.path.join(sys.path[0], "policy", "door_open_traverse", model)
+    agent.dqn_active = tf.keras.models.load_model(model_path)
+    agent.epsilon = 0.0
+    return run_dqn_test(episode,env,agent,100)
+
 ###############################################################################
 # PPO TEST
 def run_ppo_test(episode,env,agent,max_steps):
@@ -224,6 +233,17 @@ def ppo_traverse_test(episode,actor_model,critic_model,noise,model):
     agent.critic.val_net = tf.keras.models.load_model(critic_path)
     return run_ppo_test(episode,env,agent,60)
 
+def ppo_pull_traverse_test(episode, actor_model, critic_model, noise):
+    env = DoorPullAndTraverseTaskEnv(resolution=(64,64),cam_noise=noise)
+    act_dim = env.action_dimension()
+    agent = PPOAgent(env_type='discrete',dim_obs=(64,64,3),dim_act=act_dim)
+    actor_path = os.path.join(sys.path[0], "policy", "door_pull_traverse", actor_model)
+    critic_path = os.path.join(sys.path[0], "policy", "door_pull_traverse", critic_model)
+    agent.actor.logits_net = tf.keras.models.load_model(actor_path)
+    agent.critic.val_net = tf.keras.models.load_model(critic_path)
+    return run_ppo_test(episode,env,agent,100)
+
+
 ###############################################################################
 # main loop
 def get_args():
@@ -252,6 +272,9 @@ if __name__ == "__main__":
             trajectories, values = dqn_push_test(args.eps,args.model,args.noise)
         elif args.task == "traverse":
             trajectories, values = dqn_traverse_test(args.eps,args.model,args.noise)
+        elif args.task == "pull_traverse":
+            trajectories, values = dqn_pull_traverse_test(args.eps,args.model,args.noise)
+
     elif args.policy == "ppo":
         if args.task == "pull":
             trajectories, values = ppo_pull_test(args.eps,args.actor_model,args.critic_model,args.noise)
@@ -259,6 +282,8 @@ if __name__ == "__main__":
             trajectories, values = ppo_push_test(args.eps,args.actor_model,args.critic_model,args.noise)
         elif args.task == "traverse":
             trajectories, values = ppo_traverse_test(args.eps,args.actor_model,args.critic_model,args.noise,args.model)
+        elif args.task == "pull_traverse":
+            trajectories, values = ppo_pull_traverse_test(args.eps,args.actor_model,args.critic_model,args.noise)
 
     if len(trajectories) == 0:
         print("no successful test");
