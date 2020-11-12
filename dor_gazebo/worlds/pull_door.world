@@ -141,10 +141,11 @@
             <upper>-0.1</upper>
           </limit>
           <dynamics>
-            <spring_reference>1</spring_reference>
-            <spring_stiffness>1</spring_stiffness>
-            <damping>0.1</damping>
-            <friction>0.1</friction>
+            <damping>0.0</damping>
+            <friction>0.0</friction>
+            <implicitSpringDamper>true</implicitSpringDamper>
+            <spring_reference>0.0</spring_reference>
+            <spring_stiffness>30</spring_stiffness>
           </dynamics>
           <use_parent_model_frame>true</use_parent_model_frame>
         </axis>

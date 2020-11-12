@@ -275,8 +275,10 @@
           <inertia ixx="${1/12*hook_m*(hook_y*hook_y+hook_z*hook_z)}" ixy="0" ixz="0" iyy="${1/12*hook_m*(hook_z*hook_z+hook_x*hook_x)}" iyz="0" izz="${1/12*hook_m*(hook_x*hook_x+hook_y*hook_y)}"/>
         </inertial>
       </link>
-      <joint name="joint_hook_tip" type="fixed">
+      <joint name="joint_hook_tip" type="revolute">
+        <axis xyz="0 0 1" rpy="0 0 0"/>
         <origin xyz="${hook_x} ${hook_y/2} 0" rpy="0 0 0"/>
+        <limit velocity="0.0" effort="100" lower="0" upper="0"/>
         <parent link="link_hook"/>
         <child link="link_tip"/>
       </joint>
@@ -342,26 +344,26 @@
       </gazebo>
 
       <gazebo reference="link_lrwheel">
-        <mu1>0.1</mu1>
-        <mu2>0.1</mu2>
+        <mu1>0.99</mu1>
+        <mu2>0.99</mu2>
         <material>Gazebo/Black</material>
       </gazebo>
 
       <gazebo reference="link_rrwheel">
-        <mu1>0.1</mu1>
-        <mu2>0.1</mu2>
+        <mu1>0.99</mu1>
+        <mu2>0.99</mu2>
         <material>Gazebo/Black</material>
       </gazebo>
 
       <gazebo reference="link_lfwheel">
-        <mu1>0.1</mu1>
-        <mu2>0.1</mu2>
+        <mu1>0.99</mu1>
+        <mu2>0.99</mu2>
         <material>Gazebo/Black</material>
       </gazebo>
 
       <gazebo reference="link_rfwheel">
-        <mu1>0.1</mu1>
-        <mu2>0.1</mu2>
+        <mu1>0.99</mu1>
+        <mu2>0.99</mu2>
         <material>Gazebo/Black</material>
       </gazebo>
 
@@ -370,6 +372,24 @@
       </gazebo>
       <gazebo reference="link_tip">
         <material>Gazebo/Black</material>
+      </gazebo>
+
+      <!--ft force sensor in joint-->
+      <gazebo reference ="joint_hook_tip">
+        <provideFeedback>true</provideFeedback>
+      </gazebo>
+
+      <gazebo>
+        <plugin name="ft_sensor" filename="libgazebo_ros_ft_sensor.so">
+          <updateRate>100.0</updateRate>
+          <topicName>tf_sensor_topic</topicName>
+          <jointName>joint_hook_tip</jointName>
+          <noise>
+            <type>guassian</type>
+            <mean>0.0</mean>
+            <stddev>0.003</stddev>
+          </noise>
+        </plugin>
       </gazebo>
 
     </xacro:macro>

@@ -16,4 +16,9 @@
 - finger tip (length x width x height): 1 cm x 2 cm x 6 cm
 the length from tip to center of mobile base (in x axis) is 42 cm
 
+## Sensors
+- camera
+- force sensor
+  - detect the tip force and torque, (maximum force to open a door is 30 N)
+
 ## Controller

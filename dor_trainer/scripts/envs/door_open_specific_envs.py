@@ -104,6 +104,7 @@ class DoorPullAndTraverseTaskEnv(DoorOpenTaskEnv):
             else:
                 delta_x = -(self.pose_sensor.robot().position.x - self.robot_x)
                 reward = delta_x*10 - 0.1
+
         return reward
 
     # check the position of camera
@@ -171,7 +172,7 @@ class DoorPullTaskEnv(DoorOpenTaskEnv):
 
     def _is_done(self):
       done = False
-      if self._door_pull_failed() or self._door_is_open():
+      if self._door_pull_failed() or self._door_is_open() or not self.force_sensor.safe():
           done = True
 
       self.success = self._door_is_open()
@@ -179,14 +180,18 @@ class DoorPullTaskEnv(DoorOpenTaskEnv):
 
     def _compute_reward(self):
       reward = 0
-      if self._door_is_open():
-          reward = 100
-      elif self._door_pull_failed():
+      # consider force sensor data in reward
+      if not self.force_sensor.safe():
           reward = -10
       else:
-          door_r, door_a = self._door_position()
-          delta_a = door_a-self.door_angle
-          reward = delta_a*10 - 0.1
+          if self._door_is_open():
+              reward = 100
+          elif self._door_pull_failed():
+              reward = -10
+          else:
+              door_r, door_a = self._door_position()
+              delta_a = door_a-self.door_angle
+              reward = delta_a*10 - 0.1
       return reward
 
     # check the position of camera

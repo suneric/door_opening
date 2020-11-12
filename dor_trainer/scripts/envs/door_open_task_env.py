@@ -10,156 +10,32 @@ from std_msgs.msg import Float64
 from gazebo_msgs.msg import LinkStates, ModelStates, ModelState, LinkState
 from std_msgs.msg import Float32MultiArray
 from geometry_msgs.msg import Pose, Twist
-from sensor_msgs.msg import Image
 from tf.transformations import quaternion_from_euler
-import cv2
-from cv_bridge import CvBridge, CvBridgeError
 import math
-import skimage
+import cv2
+from .sensors import CameraSensor, PoseSensor, ForceSensor
 
-"""
-CameraSensor with resolution, topic and guassian noise level by default variance = 0.05, mean = 0.0
-"""
-class CameraSensor():
-    def __init__(self, resolution=(64,64), topic='/cam_front/image_raw', noise=0):
-        self.resolution = resolution
-        self.topic = topic
-        self.noise = noise
-        self.bridge = CvBridge()
-        self.image_sub = rospy.Subscriber(self.topic, Image, self._image_cb)
-        self.rgb_image = None
-        self.grey_image = None
-
-    def _image_cb(self,data):
-        try:
-            image = self.bridge.imgmsg_to_cv2(data, "bgr8")
-            self.rgb_image = self._guass_noisy(image, self.noise)
-            # print("image", image, "noise", self.rgb_image)
-            self.grey_image = cv2.cvtColor(self.rgb_image, cv2.COLOR_BGR2GRAY)
-        except CvBridgeError as e:
-            print(e)
-
-    def check_camera_ready(self):
-        self.rgb_image = None
-        while self.rgb_image is None and not rospy.is_shutdown():
-            try:
-                data = rospy.wait_for_message(self.topic, Image, timeout=5.0)
-                image = self.bridge.imgmsg_to_cv2(data, "bgr8")
-                self.rgb_image = self._guass_noisy(image, self.noise)
-                rospy.logdebug("Current image READY=>")
-            except:
-                rospy.logerr("Current image not ready yet, retrying for getting image")
-
-    def image_arr(self):
-        img = cv2.resize(self.rgb_image, self.resolution)
-        # normalize the image for easier training
-        img_arr = np.array(img)/255 - 0.5
-        img_arr = img_arr.reshape((64,64,3))
-        return img_arr
-
-    def grey_arr(self):
-        img = cv2.resize(self.grey_image, self.resolution)
-        # normalize the image for easier training
-        img_arr = np.array(img)/255 - 0.5
-        img_arr = img_arr.reshape((64,64,1))
-        return img_arr
-
-    def _guass_noisy(self,image,var):
-        if var == 0.0:
-            return image
-        img = skimage.util.img_as_float(image)
-        noisy = skimage.util.random_noise(img,'gaussian',mean=0.0,var=var)
-        return skimage.util.img_as_ubyte(noisy)
-
-    def _noisy(self,image,type):
-        if type == 'guassian':
-            img = skimage.util.img_as_float(image)
-            noisy = skimage.util.random_noise(img,'gaussian')
-            res = skimage.util.img_as_ubyte(noisy)
-        elif type == 'salt':
-            img = skimage.util.img_as_float(image)
-            noisy = skimage.util.random_noise(img,'salt')
-            res = skimage.util.img_as_ubyte(noisy)
-        elif type == 'pepper':
-            img = skimage.util.img_as_float(image)
-            noisy = skimage.util.random_noise(img,'pepper')
-            res = skimage.util.img_as_ubyte(noisy)
-        elif type == 'poisson':
-            img = skimage.util.img_as_float(image)
-            noisy = skimage.util.random_noise(img,'poisson')
-            res = skimage.util.img_as_ubyte(noisy)
-        else:
-            res = image
-        return res
-
-"""
-pose sensor
-"""
-class PoseSensor():
-    def __init__(self, noise=0.0):
-        self.noise = noise
-        self.door_pose_sub = rospy.Subscriber('/gazebo/link_states', LinkStates, self._door_pose_cb)
-        self.robot_pos_sub = rospy.Subscriber('/gazebo/model_states', ModelStates, self._robot_pose_cb)
-        self.robot_pose = None
-        self.door_pose = None
-
-    def _door_pose_cb(self,data):
-        index = data.name.index('hinged_door::door')
-        self.door_pose = data.pose[index]
-
-    def _robot_pose_cb(self,data):
-        index = data.name.index('mobile_robot')
-        self.robot_pose = data.pose[index]
-
-    def robot(self):
-        # add noise
-        return self.robot_pose
-
-    def door(self):
-        return self.door_pose
-
-    def check_sensor_ready(self):
-        self.robot_pose = None
-        rospy.logdebug("Waiting for /gazebo/model_states to be READY...")
-        while self.robot_pose is None and not rospy.is_shutdown():
-            try:
-                data = rospy.wait_for_message("/gazebo/model_states", ModelStates, timeout=5.0)
-                index = data.name.index('mobile_robot')
-                self.robot_pose = data.pose[index]
-                rospy.logdebug("Current  /gazebo/model_states READY=>")
-            except:
-                rospy.logerr("Current  /gazebo/model_states not ready yet, retrying for getting  /gazebo/model_states")
-
-        self.door_pose = None
-        rospy.logdebug("Waiting for /gazebo/link_states to be READY...")
-        while self.door_pose is None and not rospy.is_shutdown():
-            try:
-                data = rospy.wait_for_message("/gazebo/link_states", LinkStates, timeout=5.0)
-                index = data.name.index('hinged_door::door')
-                self.door_pose = data.pose[index]
-                rospy.logdebug("Current  /gazebo/link_states READY=>")
-            except:
-                rospy.logerr("Current  /gazebo/link_states not ready yet, retrying for getting  /gazebo/link_states")
 
 """
 Robot Driver
 """
 class RobotDriver():
-    def __init__(self, noise=0.0):
-        self.noise = noise
+    def __init__(self):
         self.vel_pub = rospy.Publisher('cmd_vel', Twist, queue_size=1)
 
+    # the robot dirver execute the command with a guassian distribution random error
+    # with mean = 0, and stddev = 0.2 in linear and angular velocity
     def drive(self,vx,vyaw):
+        s = 1.0 # np.random.normal(1,0.1)
         msg = Twist()
-        msg.linear.x = vx
+        msg.linear.x = vx*s
         msg.linear.y = 0
         msg.linear.z = 0
         msg.angular.x = 0
         msg.angular.y = 0
-        msg.angular.z = vyaw
+        msg.angular.z = vyaw*s
         self.vel_pub.publish(msg)
-        # add noise
-
+        
     def stop(self):
         self.drive(0,0)
 
@@ -193,7 +69,7 @@ class DoorOpenTaskEnv(GymGazeboEnv):
 
     self.door_dim = [0.9144, 0.0698] # length, width
     self.info = {}
-    self.action_space = 2*np.array([[1.5,3.14],[1.5,0.0],[0.0,3.14],[-1.5,3.14],[-1.5,0.0],[1.5,-3.14],[0.0,-3.14],[-1.5,-3.14]]) # x and yaw velocities
+    self.action_space = self._action_space()
     self.step_cnt = 0
     self.door_angle = 0.1 # inital angle of door
     self.success = False
@@ -207,6 +83,7 @@ class DoorOpenTaskEnv(GymGazeboEnv):
 
     self.driver = RobotDriver()
     self.pose_sensor = PoseSensor()
+    self.force_sensor = ForceSensor('/tf_sensor_topic',30)
 
     self._check_all_sensors_ready()
     self.robot_pose_pub = rospy.Publisher('/gazebo/set_model_state', ModelState, queue_size=1)
@@ -215,8 +92,19 @@ class DoorOpenTaskEnv(GymGazeboEnv):
     self.gazebo.pauseSim()
     rospy.logdebug("Finished DoorOpenTaskEnv INIT...")
 
+  # give an action space with linear and angular velocity in 3 levels, result in 24 actions
+  def _action_space(self):
+      lv, av = 2, 3.14
+      middle = np.array([[lv,-av],[lv,0],[lv,av],[-lv,-av],[-lv,0],[-lv,av],[0,-av],[0,av]])
+      low = 0.1*middle
+      high = 2*middle
+      action_space = np.concatenate((low,middle,high),axis=0)
+      print("action space", action_space)
+      return action_space
+
   def action_dimension(self):
       dim = self.action_space.shape
+      print("action space dimension", dim[0])
       return dim[0]
 
   def _check_all_systems_ready(self):
@@ -232,6 +120,7 @@ class DoorOpenTaskEnv(GymGazeboEnv):
     self.back_camera.check_camera_ready()
     self.up_camera.check_camera_ready()
     self.pose_sensor.check_sensor_ready()
+    self.force_sensor.check_force_sensor_ready()
     rospy.logdebug("All Sensors READY")
 
   def _check_publisher_connection(self):
