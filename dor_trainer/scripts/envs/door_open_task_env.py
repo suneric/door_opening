@@ -82,7 +82,7 @@ class DoorOpenTaskEnv(GymGazeboEnv):
 
     self.driver = RobotDriver()
     self.pose_sensor = PoseSensor()
-    self.force_sensor = ForceSensor('/tf_sensor_topic',100)
+    self.force_sensor = ForceSensor('/tf_sensor_topic')
 
     self._check_all_sensors_ready()
     self.robot_pose_pub = rospy.Publisher('/gazebo/set_model_state', ModelState, queue_size=1)

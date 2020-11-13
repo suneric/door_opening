@@ -14,10 +14,9 @@ import skimage
 ForceSensor for the sidebar tip hook joint
 """
 class ForceSensor():
-    def __init__(self, topic='/tf_sensor_topic', force_limit=30):
+    def __init__(self, topic='/tf_sensor_topic'):
         self.topic=topic
         self.force_sub = rospy.Subscriber(self.topic, WrenchStamped, self._force_cb)
-        self.force_limit = force_limit
         self.max_force = 0.0
         self.record = []
 
@@ -28,14 +27,11 @@ class ForceSensor():
             self.max_force = max
 
     # get sensored force data in x,y,z direction
-    def safe(self):
+    def data(self):
         max_force = self.max_force
         self.record.append(max_force)
-        is_safe = True
-        if max_force > self.force_limit:
-            is_safe = False
         self.max_force = 0.0
-        return is_safe
+        return max_force
 
     def force_record(self):
         return self.record

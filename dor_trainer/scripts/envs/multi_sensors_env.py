@@ -14,6 +14,7 @@ from math import *
 class MS_DoorPullTaskEnv(DoorPullTaskEnv):
     def __init__(self,resolution=(64,64),cam_noise=0.0):
         super(MS_DoorPullTaskEnv, self).__init__(resolution, cam_noise)
+        self.safe_force = 270 #N
 
     def _set_init(self):
       self.driver.stop()
@@ -23,7 +24,7 @@ class MS_DoorPullTaskEnv(DoorPullTaskEnv):
       self.step_cnt = 0
       self.success = False
       self.force_sensor.reset_record()
-      self.force_safe = True
+      self.max_force = 0.0
 
     def _action_space(self):
       lv,av = 1.5,3.14
@@ -35,10 +36,18 @@ class MS_DoorPullTaskEnv(DoorPullTaskEnv):
       print("action space", action_space)
       return action_space
 
+    def _take_action(self, action_idx):
+      _,self.door_angle = self._door_position()
+      action = self.action_space[action_idx]
+      self.driver.drive(action[0],action[1])
+      rospy.sleep(0.5)
+      self.max_force = self.force_sensor.data()
+      self.step_cnt += 1
+
     def _is_done(self):
       self.success = self._door_is_open()
       done = False
-      if not self.force_safe:
+      if self.max_force > self.safe_force:
           print("maximum forces", self.force_sensor.force_record())
           return True
 
@@ -48,9 +57,8 @@ class MS_DoorPullTaskEnv(DoorPullTaskEnv):
 
     def _compute_reward(self):
       reward = 0
-      if not self.force_sensor.safe():
+      if self.max_force > self.safe_force:
         reward = -10
-        self.force_safe = False
         return reward
 
       if self._door_is_open():
