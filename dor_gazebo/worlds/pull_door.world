@@ -144,8 +144,8 @@
             <damping>0.0</damping>
             <friction>0.0</friction>
             <implicitSpringDamper>true</implicitSpringDamper>
-            <spring_reference>0.0</spring_reference>
-            <spring_stiffness>30</spring_stiffness>
+            <spring_reference>0.35</spring_reference>
+            <spring_stiffness>10</spring_stiffness>
           </dynamics>
           <use_parent_model_frame>true</use_parent_model_frame>
         </axis>

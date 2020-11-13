@@ -23,7 +23,8 @@ import math
 
 from agents.dqn_conv import DQNAgent
 from agents.ppo_conv import PPOAgent
-from envs.door_open_specific_envs import DoorPullTaskEnv, DoorPushTaskEnv, DoorTraverseTaskEnv, DoorPullAndTraverseTaskEnv
+from envs.door_open_specific_envs import DoorPullTaskEnv, DoorPushTaskEnv, DoorTraverseTaskEnv
+from envs.curriculum_learning_env import DoorPullAndTraverseTaskEnv
 
 # plot trajectory which contains a sequence of pose of robot and door
 # info {

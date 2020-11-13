@@ -19,6 +19,7 @@ class ForceSensor():
         self.force_sub = rospy.Subscriber(self.topic, WrenchStamped, self._force_cb)
         self.force_limit = force_limit
         self.max_force = 0.0
+        self.record = []
 
     def _force_cb(self,data):
         force = data.wrench.force
@@ -28,11 +29,19 @@ class ForceSensor():
 
     # get sensored force data in x,y,z direction
     def safe(self):
-        if self.max_force < self.force_limit:
-            return True
-        else:
-            print("maximum force detected",self.max_force)
-            return False
+        max_force = self.max_force
+        self.record.append(max_force)
+        is_safe = True
+        if max_force > self.force_limit:
+            is_safe = False
+        self.max_force = 0.0
+        return is_safe
+
+    def force_record(self):
+        return self.record
+
+    def reset_record(self):
+        self.record = []
 
     def check_force_sensor_ready(self):
         self.force_data = None

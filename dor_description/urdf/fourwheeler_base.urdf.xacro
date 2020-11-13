@@ -251,7 +251,9 @@
       </link>
 
       <!--hook for opening door-->
-      <joint name="joint_fbummer_hook" type="fixed">
+      <joint name="joint_fbummer_hook" type="revolute">
+        <axis xyz="1 0 0" rpy="0 0 0"/>
+        <limit velocity="0" effort="1000" lower="0" upper="0"/>
         <origin xyz="${bumper_x/2} -${bumper_y/2} ${bumper_z/2}" rpy="0 0 0"/>
         <parent link="link_fbumper"/>
         <child link="link_hook"/>
@@ -275,10 +277,8 @@
           <inertia ixx="${1/12*hook_m*(hook_y*hook_y+hook_z*hook_z)}" ixy="0" ixz="0" iyy="${1/12*hook_m*(hook_z*hook_z+hook_x*hook_x)}" iyz="0" izz="${1/12*hook_m*(hook_x*hook_x+hook_y*hook_y)}"/>
         </inertial>
       </link>
-      <joint name="joint_hook_tip" type="revolute">
-        <axis xyz="0 0 1" rpy="0 0 0"/>
+      <joint name="joint_hook_tip" type="fixed">
         <origin xyz="${hook_x} ${hook_y/2} 0" rpy="0 0 0"/>
-        <limit velocity="0.0" effort="100" lower="0" upper="0"/>
         <parent link="link_hook"/>
         <child link="link_tip"/>
       </joint>
@@ -344,26 +344,26 @@
       </gazebo>
 
       <gazebo reference="link_lrwheel">
-        <mu1>0.99</mu1>
-        <mu2>0.99</mu2>
+        <mu1>0.8</mu1>
+        <mu2>0.8</mu2>
         <material>Gazebo/Black</material>
       </gazebo>
 
       <gazebo reference="link_rrwheel">
-        <mu1>0.99</mu1>
-        <mu2>0.99</mu2>
+        <mu1>0.8</mu1>
+        <mu2>0.8</mu2>
         <material>Gazebo/Black</material>
       </gazebo>
 
       <gazebo reference="link_lfwheel">
-        <mu1>0.99</mu1>
-        <mu2>0.99</mu2>
+        <mu1>0.8</mu1>
+        <mu2>0.8</mu2>
         <material>Gazebo/Black</material>
       </gazebo>
 
       <gazebo reference="link_rfwheel">
-        <mu1>0.99</mu1>
-        <mu2>0.99</mu2>
+        <mu1>0.8</mu1>
+        <mu2>0.8</mu2>
         <material>Gazebo/Black</material>
       </gazebo>
 
@@ -375,7 +375,7 @@
       </gazebo>
 
       <!--ft force sensor in joint-->
-      <gazebo reference ="joint_hook_tip">
+      <gazebo reference ="joint_fbummer_hook">
         <provideFeedback>true</provideFeedback>
       </gazebo>
 
@@ -383,7 +383,7 @@
         <plugin name="ft_sensor" filename="libgazebo_ros_ft_sensor.so">
           <updateRate>100.0</updateRate>
           <topicName>tf_sensor_topic</topicName>
-          <jointName>joint_hook_tip</jointName>
+          <jointName>joint_fbummer_hook</jointName>
           <noise>
             <type>guassian</type>
             <mean>0.0</mean>

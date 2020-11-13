@@ -10,7 +10,7 @@ import logging
 logging.basicConfig(format='%(asctime)s %(message)s',level=logging.INFO)
 
 from agents.ppo_conv import PPOAgent, PPOBuffer
-from envs.curriculum_learning_env import DoorPullAndTraverseTaskEnv
+from envs.multi_sensors_env import MS_DoorPullTaskEnv
 import rospy
 import tensorflow as tf
 import argparse
@@ -22,13 +22,13 @@ def get_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('--noise', type=float, default=0.0)
     parser.add_argument('--max_ep', type=int, default=10000)
-    parser.add_argument('--max_step', type=int, default=100)
+    parser.add_argument('--max_step', type=int, default=60)
     return parser.parse_args()
 
 if __name__=='__main__':
     args = get_args()
     rospy.init_node('ppo_train', anonymous=True, log_level=rospy.INFO)
-    env = DoorPullAndTraverseTaskEnv(resolution=(64,64), cam_noise=args.noise)
+    env = MS_DoorPullTaskEnv(resolution=(64,64), cam_noise=args.noise)
     dim_obs = (64,64,3)
     dim_act = env.action_dimension()
     agent = PPOAgent(
@@ -37,7 +37,7 @@ if __name__=='__main__':
         dim_act=dim_act,
     )
     replay_buffer = PPOBuffer(dim_obs=dim_obs, dim_act=1, size=1000, gamma=0.99, lam=0.97)
-    model_dir = os.path.join(sys.path[0], 'saved_models', 'door_pull_traverse', agent.name+'_noise'+str(args.noise), datetime.now().strftime("%Y-%m-%d-%H-%M"))
+    model_dir = os.path.join(sys.path[0], 'saved_models', 'ms_door_pull', agent.name+'_noise'+str(args.noise), datetime.now().strftime("%Y-%m-%d-%H-%M"))
     # paramas
     steps_per_epoch = replay_buffer.max_size
     # epochs = 100

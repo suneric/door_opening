@@ -22,11 +22,10 @@ Robot Driver
 class RobotDriver():
     def __init__(self):
         self.vel_pub = rospy.Publisher('cmd_vel', Twist, queue_size=1)
-
     # the robot dirver execute the command with a guassian distribution random error
-    # with mean = 0, and stddev = 0.2 in linear and angular velocity
+    # with mean = 0, and stddev = 0.1 in linear and angular velocity
     def drive(self,vx,vyaw):
-        s = 1.0 # np.random.normal(1,0.1)
+        s = np.random.normal(1,0.1)
         msg = Twist()
         msg.linear.x = vx*s
         msg.linear.y = 0
@@ -35,7 +34,7 @@ class RobotDriver():
         msg.angular.y = 0
         msg.angular.z = vyaw*s
         self.vel_pub.publish(msg)
-        
+
     def stop(self):
         self.drive(0,0)
 
@@ -83,7 +82,7 @@ class DoorOpenTaskEnv(GymGazeboEnv):
 
     self.driver = RobotDriver()
     self.pose_sensor = PoseSensor()
-    self.force_sensor = ForceSensor('/tf_sensor_topic',30)
+    self.force_sensor = ForceSensor('/tf_sensor_topic',100)
 
     self._check_all_sensors_ready()
     self.robot_pose_pub = rospy.Publisher('/gazebo/set_model_state', ModelState, queue_size=1)
@@ -92,13 +91,12 @@ class DoorOpenTaskEnv(GymGazeboEnv):
     self.gazebo.pauseSim()
     rospy.logdebug("Finished DoorOpenTaskEnv INIT...")
 
-  # give an action space with linear and angular velocity in 3 levels, result in 24 actions
+  # a safe velocity of robot is 1.5 m/s, given a radius of 0.5 m robot, the safe angular
+  # velocity can be pi rad/s
   def _action_space(self):
-      lv, av = 2, 3.14
-      middle = np.array([[lv,-av],[lv,0],[lv,av],[-lv,-av],[-lv,0],[-lv,av],[0,-av],[0,av]])
-      low = 0.1*middle
-      high = 2*middle
-      action_space = np.concatenate((low,middle,high),axis=0)
+      lv,av = 1.5,3.14
+      safe_base = np.array([[lv,av],[lv,0],[0,av],[-lv,av],[-lv,0],[lv,-av],[0,-av],[-lv,-av]])
+      action_space = 2*safe_base
       print("action space", action_space)
       return action_space
 

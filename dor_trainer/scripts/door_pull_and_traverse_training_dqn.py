@@ -9,7 +9,8 @@ import logging
 logging.basicConfig(format='%(asctime)s %(message)s',level=logging.INFO)
 
 from agents.dqn_conv import DQNAgent
-from envs.door_open_specific_envs import DoorPullAndTraverseTaskEnv, ModelSaver
+from envs.door_open_specific_envs import ModelSaver
+from envs.curriculum_learning_env import DoorPullAndTraverseTaskEnv
 import rospy
 import tensorflow as tf
 import argparse
