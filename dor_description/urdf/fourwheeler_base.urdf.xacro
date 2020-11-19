@@ -344,26 +344,26 @@
       </gazebo>
 
       <gazebo reference="link_lrwheel">
-        <mu1>0.8</mu1>
-        <mu2>0.8</mu2>
+        <mu1>0.01</mu1>
+        <mu2>0.01</mu2>
         <material>Gazebo/Black</material>
       </gazebo>
 
       <gazebo reference="link_rrwheel">
-        <mu1>0.8</mu1>
-        <mu2>0.8</mu2>
+        <mu1>0.01</mu1>
+        <mu2>0.01</mu2>
         <material>Gazebo/Black</material>
       </gazebo>
 
       <gazebo reference="link_lfwheel">
-        <mu1>0.8</mu1>
-        <mu2>0.8</mu2>
+        <mu1>0.01</mu1>
+        <mu2>0.01</mu2>
         <material>Gazebo/Black</material>
       </gazebo>
 
       <gazebo reference="link_rfwheel">
-        <mu1>0.8</mu1>
-        <mu2>0.8</mu2>
+        <mu1>0.01</mu1>
+        <mu2>0.01</mu2>
         <material>Gazebo/Black</material>
       </gazebo>
 
