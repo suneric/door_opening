@@ -20,12 +20,17 @@ from .sensors import CameraSensor, PoseSensor, ForceSensor
 Robot Driver
 """
 class RobotDriver():
-    def __init__(self):
+    def __init__(self,force_sensor):
+        self.force_sensor = force_sensor
         self.vel_pub = rospy.Publisher('cmd_vel', Twist, queue_size=1)
     # the robot dirver execute the command with a guassian distribution random error
     # with mean = 0, and stddev = 0.1 in linear and angular velocity
     def drive(self,vx,vyaw):
-        s = np.random.normal(1,0.1)
+        #s = np.random.normal(1,0.1)
+        #rate = rospy.Rate(20)
+        # while not rospy.is_shutdown():
+        s = self.safe_coefficient()
+        #print("safe speed coefficient", s)
         msg = Twist()
         msg.linear.x = vx*s
         msg.linear.y = 0
@@ -34,6 +39,15 @@ class RobotDriver():
         msg.angular.y = 0
         msg.angular.z = vyaw*s
         self.vel_pub.publish(msg)
+        # rate.sleep()
+
+    def safe_coefficient(self):
+        safe_max = 270 # N
+        force = self.force_sensor.data();
+        if force >= safe_max:
+            return 0
+        else:
+            return 1-force/safe_max
 
     def stop(self):
         self.drive(0,0)
@@ -80,9 +94,9 @@ class DoorOpenTaskEnv(GymGazeboEnv):
     self.back_camera = CameraSensor(resolution,'/cam_back/image_raw',cam_noise)
     self.up_camera = CameraSensor(resolution,'/cam_up/image_raw',cam_noise)
 
-    self.driver = RobotDriver()
     self.pose_sensor = PoseSensor()
     self.force_sensor = ForceSensor('/tf_sensor_topic')
+    self.driver = RobotDriver(self.force_sensor)
 
     self._check_all_sensors_ready()
     self.robot_pose_pub = rospy.Publisher('/gazebo/set_model_state', ModelState, queue_size=1)

@@ -26,16 +26,6 @@ class MS_DoorPullTaskEnv(DoorPullTaskEnv):
       self.force_sensor.reset_record()
       self.max_force = 0.0
 
-    def _action_space(self):
-      lv,av = 1.5,3.14
-      safe_base = np.array([[lv,av],[lv,0],[0,av],[-lv,av],[-lv,0],[lv,-av],[0,-av],[-lv,-av]])
-      low = 0.2*safe_base
-      middle = safe_base
-      high = 2*safe_base
-      action_space = np.concatenate((low,middle,high),axis=0)
-      print("action space", action_space)
-      return action_space
-
     def _take_action(self, action_idx):
       _,self.door_angle = self._door_position()
       action = self.action_space[action_idx]

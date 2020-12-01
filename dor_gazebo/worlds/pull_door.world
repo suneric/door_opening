@@ -143,7 +143,6 @@
           <dynamics>
             <damping>0.1</damping>
             <friction>0.1</friction>
-            <implicitSpringDamper>true</implicitSpringDamper>
             <spring_reference>1</spring_reference>
             <spring_stiffness>1</spring_stiffness>
           </dynamics>
