@@ -22,7 +22,7 @@ def get_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('--noise', type=float, default=0.0)
     parser.add_argument('--max_ep', type=int, default=10000)
-    parser.add_argument('--max_step', type=int, default=100)
+    parser.add_argument('--max_step', type=int, default=150)
     return parser.parse_args()
 
 if __name__=='__main__':

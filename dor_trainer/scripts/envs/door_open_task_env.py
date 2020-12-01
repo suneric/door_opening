@@ -10,60 +10,12 @@ from std_msgs.msg import Float64
 from gazebo_msgs.msg import LinkStates, ModelStates, ModelState, LinkState
 from std_msgs.msg import Float32MultiArray
 from geometry_msgs.msg import Pose, Twist
-from tf.transformations import quaternion_from_euler
+from tf.transformations import quaternion_from_euler,quaternion_matrix
 import math
 import cv2
-from .sensors import CameraSensor, PoseSensor, ForceSensor
+from .sensors import CameraSensor, PoseSensor
+from .robot_driver import RobotDriver
 
-
-"""
-Robot Driver
-"""
-class RobotDriver():
-    def __init__(self,force_sensor):
-        self.force_sensor = force_sensor
-        self.vel_pub = rospy.Publisher('cmd_vel', Twist, queue_size=1)
-    # the robot dirver execute the command with a guassian distribution random error
-    # with mean = 0, and stddev = 0.1 in linear and angular velocity
-    def drive(self,vx,vyaw):
-        #s = np.random.normal(1,0.1)
-        #rate = rospy.Rate(20)
-        # while not rospy.is_shutdown():
-        s = self.safe_coefficient()
-        #print("safe speed coefficient", s)
-        msg = Twist()
-        msg.linear.x = vx*s
-        msg.linear.y = 0
-        msg.linear.z = 0
-        msg.angular.x = 0
-        msg.angular.y = 0
-        msg.angular.z = vyaw*s
-        self.vel_pub.publish(msg)
-        # rate.sleep()
-
-    def safe_coefficient(self):
-        safe_max = 270 # N
-        force = self.force_sensor.data();
-        if force >= safe_max:
-            return 0
-        else:
-            return 1-force/safe_max
-
-    def stop(self):
-        self.drive(0,0)
-
-    def check_connection(self):
-      rate = rospy.Rate(10)  # 10hz
-      while self.vel_pub.get_num_connections() == 0 and not rospy.is_shutdown():
-        rospy.logdebug("No susbribers to vel_pub yet so we wait and try again")
-        try:
-          rate.sleep()
-        except rospy.ROSInterruptException:
-          # This is to avoid error when world is rested, time when backwards.
-          pass
-      rospy.logdebug("vel_pub Publisher Connected")
-
-###############################################################################
 register(
   id='DoorOpenTash-v0',
   entry_point='envs.door_open_task_env:DoorOpenTaskEnv')
@@ -95,8 +47,7 @@ class DoorOpenTaskEnv(GymGazeboEnv):
     self.up_camera = CameraSensor(resolution,'/cam_up/image_raw',cam_noise)
 
     self.pose_sensor = PoseSensor()
-    self.force_sensor = ForceSensor('/tf_sensor_topic')
-    self.driver = RobotDriver(self.force_sensor)
+    self.driver = RobotDriver()
 
     self._check_all_sensors_ready()
     self.robot_pose_pub = rospy.Publisher('/gazebo/set_model_state', ModelState, queue_size=1)
@@ -132,7 +83,7 @@ class DoorOpenTaskEnv(GymGazeboEnv):
     self.back_camera.check_camera_ready()
     self.up_camera.check_camera_ready()
     self.pose_sensor.check_sensor_ready()
-    self.force_sensor.check_force_sensor_ready()
+    self.driver.check_driver_ready()
     rospy.logdebug("All Sensors READY")
 
   def _check_publisher_connection(self):
@@ -280,30 +231,13 @@ class DoorOpenTaskEnv(GymGazeboEnv):
   def _pose_matrix(self, cp):
     position = cp.position
     orientation = cp.orientation
-    matrix = np.eye(4)
-    # translation
-    matrix[0,3] = position.x# in meter
-    matrix[1,3] = position.y
-    matrix[2,3] = position.z
-    # quaternion to matrix
     x = orientation.x
     y = orientation.y
     z = orientation.z
     w = orientation.w
-
-    Nq = w*w + x*x + y*y + z*z
-    if Nq < 0.001:
-        return matrix
-
-    s = 2.0/Nq
-    X = x*s
-    Y = y*s
-    Z = z*s
-    wX = w*X; wY = w*Y; wZ = w*Z
-    xX = x*X; xY = x*Y; xZ = x*Z
-    yY = y*Y; yZ = y*Z; zZ = z*Z
-    matrix=np.array([[1.0-(yY+zZ), xY-wZ, xZ+wY, position.x],
-            [xY+wZ, 1.0-(xX+zZ), yZ-wX, position.y],
-            [xZ-wY, yZ+wX, 1.0-(xX+yY), position.z],
+    mat = quaternion_matrix([x,y,z,w])
+    matrix=np.array([[mat[0,0],mat[0,1],mat[0,2],position.x],
+            [mat[1,0],mat[1,1],mat[1,2], position.y],
+            [mat[2,0],mat[2,1],mat[2,2], position.z],
             [0, 0, 0, 1]])
     return matrix
